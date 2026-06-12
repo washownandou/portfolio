@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投資組合追蹤器 | Portfolio Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: linear-gradient(135deg, #1a1f3a 0%, #2d1b4e 100%);
+    color: #e8eaf6; min-height: 100vh; padding: 20px;
+  }
+  .container {
+    max-width: 1600px; margin: 0 auto;
+    background: rgba(255,255,255,0.04); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .header h1 {
+    font-size: 24px;
+    background: linear-gradient(90deg, #64b5f6, #ba68c8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .controls-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  select, button, input {
+    background: rgba(40,44,80,0.95); color: #e8eaf6;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 8px 12px; border-radius: 8px; font-size: 14px;
+    transition: all 0.2s; font-family: inherit;
+  }
+  select {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b0bec5' stroke-width='2.5'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 6px center; padding-right: 22px;
+  }
+  select option { background: #2a2f4f !important; color: #e8eaf6 !important; padding: 8px; }
+  select option:hover, select option:checked, select option:focus {
+    background: linear-gradient(0deg, rgba(94,53,177,0.5), rgba(94,53,177,0.5)) !important; color: #fff !important;
+  }
+  input { background: rgba(255,255,255,0.08); }
+  select:hover, button:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+  button { cursor: pointer; font-weight: 500; }
+  .btn-primary { background: linear-gradient(135deg, #4a90e2, #5e35b1); border: none; }
+  .btn-primary:hover { background: linear-gradient(135deg, #5ba0f2, #6e45c1); transform: translateY(-1px); }
+  .btn-success { background: linear-gradient(135deg, #43a047, #2e7d32); border: none; }
+  .btn-warn   { background: linear-gradient(135deg, #fb8c00, #e65100); border: none; }
+  .btn-info   { background: linear-gradient(135deg, #0288d1, #01579b); border: none; }
+  .btn-danger { background: linear-gradient(135deg, #e53935, #b71c1c); border: none; }
+  .btn-secondary { background: linear-gradient(135deg, #546e7a, #37474f); border: none; }
+  .action-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+
+  .btn-update-main {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    padding: 14px 28px !important;
+    background: linear-gradient(135deg, #5ba0f2, #7e57c2) !important;
+    border: none !important;
+    box-shadow: 0 4px 16px rgba(94,53,177,0.5), 0 0 0 0 rgba(186,104,200,0.7);
+    letter-spacing: 0.5px;
+    animation: pulseUpdate 2.4s ease-in-out infinite;
+    position: relative;
+  }
+  .btn-update-main:hover {
+    background: linear-gradient(135deg, #6bb0ff, #9575cd) !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 24px rgba(94,53,177,0.7);
+    animation: none;
+  }
+  @keyframes pulseUpdate {
+    0%, 100% { box-shadow: 0 4px 16px rgba(94,53,177,0.5), 0 0 0 0 rgba(186,104,200,0.5); }
+    50%      { box-shadow: 0 4px 16px rgba(94,53,177,0.7), 0 0 0 8px rgba(186,104,200,0); }
+  }
+
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  table { width: 100%; border-collapse: collapse; min-width: 1300px; table-layout: fixed; }
+  th {
+    background: rgba(0,0,0,0.3); padding: 10px 4px; text-align: center;
+    font-size: 12px; font-weight: 600; color: #b0bec5;
+    border-bottom: 2px solid rgba(255,255,255,0.1); white-space: nowrap;
+    position: relative; user-select: none;
+  }
+  th.draggable-col { cursor: grab; }
+  th.draggable-col:hover { background: rgba(94,53,177,0.25); color: #fff; }
+  th.draggable-col:active { cursor: grabbing; }
+  th.col-dragging { opacity: 0.4; }
+  th.col-drag-over { background: rgba(186,104,200,0.35) !important; border-left: 3px solid #ba68c8 !important; }
+  th .col-grip {
+    display: inline-block; font-size: 9px; color: #607d8b; margin-right: 3px; vertical-align: middle;
+  }
+  td { padding: 5px 3px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+  tr.row-item { transition: background 0.15s; }
+  tr.row-item:hover td { background: rgba(255,255,255,0.03); }
+  tr.dragging { opacity: 0.4; background: rgba(94,53,177,0.2); }
+  tr.drag-over td { border-top: 2px solid #ba68c8 !important; }
+
+  td input, td select {
+    width: 100%; text-align: center;
+    font-family: "SF Mono", Consolas, monospace; font-size: 13px; padding: 6px 4px;
+  }
+  td input.num { text-align: right; padding-right: 6px; }
+
+  .cost-wrap { display: flex; align-items: center; gap: 4px; }
+  .cost-wrap input { flex: 1; min-width: 0; }
+  .cost-currency {
+    font-size: 11px; color: #90a4ae;
+    font-family: "SF Mono", Consolas, monospace;
+    min-width: 28px; text-align: left; font-weight: 600;
+  }
+  .drag-handle {
+    cursor: grab; color: #607d8b; font-size: 16px; user-select: none; padding: 4px;
+  }
+  .drag-handle:hover { color: #ba68c8; }
+  .drag-handle:active { cursor: grabbing; }
+
+  .col-output { font-family: "SF Mono", Consolas, monospace; font-weight: 500; }
+  .up { color: var(--up-color, #ef5350); }
+  .down { color: var(--down-color, #26a69a); }
+  .flat { color: #b0bec5; }
+
+  .summary {
+    margin-top: 20px; padding: 24px 32px;
+    background: rgba(0,0,0,0.25); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .summary-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(520px, auto);
+    align-items: center; gap: 12px;
+    padding: 10px 0;
+  }
+  .summary-row.divider {
+    border-top: 1px dashed rgba(255,255,255,0.15);
+    margin-top: 8px; padding-top: 18px;
+  }
+  .summary-row .summary-left {
+    color: #90a4ae; font-size: 17px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .summary-row .summary-right {
+    text-align: right; font-family: "SF Mono", Consolas, monospace; font-weight: 700;
+  }
+  .summary-row .summary-right .summary-value {
+    font-size: 22px; font-weight: 800;
+  }
+  .summary-row.divider .summary-right .summary-value,
+  .summary-row.big-row .summary-right .summary-value {
+    font-size: 30px; font-weight: 900; letter-spacing: 0.5px;
+  }
+  .summary-row .sep { display: inline-block; margin: 0 14px; color: #455a64; }
+  .summary-row.fx-row { display: flex; justify-content: flex-end; padding-top: 14px; }
+  .summary-row.fx-row .summary-left { display: none; }
+  .summary-row.fx-row .summary-right {
+    font-size: 12px; color: #78909c; font-weight: 500;
+  }
+
+  .del-btn { background: transparent; border: none; color: #ef5350; cursor: pointer; font-size: 18px; padding: 4px 8px; }
+  .del-btn:hover { color: #ff8a80; }
+  .status { margin: 12px 0; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
+  .status.show { display: block; }
+  .status.info { background: rgba(2,136,209,0.2); border: 1px solid #0288d1; }
+  .status.error { background: rgba(229,57,53,0.2); border: 1px solid #e53935; }
+  .status.success { background: rgba(67,160,71,0.2); border: 1px solid #43a047; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hint { font-size: 11px; color: #78909c; margin: -8px 0 12px 4px; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: #2a2f4f; border-radius: 16px; padding: 24px;
+    width: 90%; max-width: 480px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    max-height: 80vh; display: flex; flex-direction: column;
+  }
+  .modal h2 {
+    font-size: 18px; margin-bottom: 8px; color: #e8eaf6;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .modal p.modal-hint { font-size: 12px; color: #90a4ae; margin-bottom: 16px; }
+  .col-list {
+    overflow-y: auto; flex: 1;
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px;
+  }
+  .col-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 6px;
+    background: rgba(255,255,255,0.04); margin-bottom: 4px;
+    cursor: grab; user-select: none;
+  }
+  .col-item:hover { background: rgba(255,255,255,0.1); }
+  .col-item:active { cursor: grabbing; }
+  .col-item.dragging { opacity: 0.4; }
+  .col-item.drag-over { border-top: 2px solid #ba68c8; }
+  .col-item .grip { color: #607d8b; font-size: 14px; }
+  .col-item input[type="checkbox"] {
+    width: 18px; height: 18px; cursor: pointer; accent-color: #ba68c8;
+  }
+  .col-item .col-name { flex: 1; font-size: 14px; }
+  .col-item.locked { opacity: 0.5; cursor: not-allowed; }
+  .col-item.locked .grip { color: #455a64; }
+  .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
+
+  @media (max-width: 900px) {
+    .summary-row { grid-template-columns: 1fr; }
+    .summary-row .summary-right { text-align: left; }
+  }
+  @media (max-width: 768px) {
+    .header h1 { font-size: 18px; } body { padding: 10px; } .container { padding: 14px; }
+    .btn-update-main { font-size: 15px !important; padding: 12px 20px !important; }
+    .summary-row .summary-right .summary-value { font-size: 18px; }
+    .summary-row.divider .summary-right .summary-value,
+    .summary-row.big-row .summary-right .summary-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <div class="header">
+    <h1 id="title">📊 投資組合追蹤器</h1>
+    <div class="controls-top">
+      <select id="langSelect">
+        <option value="zh">🌐 中文</option>
+        <option value="en">🌐 English</option>
+      </select>
+      <select id="currencySelect">
+        <option value="TWD">💰 TWD</option>
+        <option value="USD">💰 USD</option>
+      </select>
+      <select id="colorSelect">
+        <option value="tw">🔴 紅漲綠跌</option>
+        <option value="us">🟢 綠漲紅跌</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-primary btn-update-main" id="btnUpdate">🔄 <span data-i18n="update">更新股價</span></button>
+    <button class="btn-success" id="btnAdd">➕ <span data-i18n="addRow">新增列</span></button>
+    <button class="btn-secondary" id="btnColumns">⚙️ <span data-i18n="columns">欄位設定</span></button>
+    <button class="btn-info" id="btnPdf">📄 <span data-i18n="pdf">匯出 PDF</span></button>
+    <button class="btn-warn" id="btnShare">🔗 <span data-i18n="share">分享連結</span></button>
+    <button class="btn-danger" id="btnClear">🗑 <span data-i18n="clear">清除全部</span></button>
+  </div>
+
+  <div class="hint" id="dragHint">💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位</div>
+
+  <div id="status" class="status"></div>
+
+  <div class="table-wrap">
+    <table id="portfolioTable">
+      <colgroup id="tableColgroup"></colgroup>
+      <thead><tr id="tableHead"></tr></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="summary" id="summary">
+    <div class="summary-row">
+      <span class="summary-left">📅 <span id="todayDate">-</span></span>
+      <span class="summary-right">
+        <span class="summary-label" data-i18n="dayPnL" style="color:#90a4ae;font-size:14px;font-weight:600;">當日總盈虧：</span>
+        <span class="summary-value" id="dayPnL">-</span>
+        <span class="sep">|</span>
+        <span class="summary-label" data-i18n="dayPct" style="color:#90a4ae;font-size:14px;font-weight:600;">當日漲跌：</span>
+        <span class="summary-value" id="dayPct">-</span>
+      </span>
+    </div>
+    <div class="summary-row divider big-row">
+      <span class="summary-left" data-i18n="totalValue">💼 目前總淨值：</span>
+      <span class="summary-right">
+        <span class="summary-value" id="totalValue">-</span>
+      </span>
+    </div>
+    <div class="summary-row big-row">
+      <span class="summary-left" data-i18n="totalPnL">📈 開倉總盈虧：</span>
+      <span class="summary-right">
+        <span class="summary-value" id="totalPnL">-</span>
+      </span>
+    </div>
+    <div class="summary-row fx-row">
+      <span class="summary-right">
+        <span data-i18n="fxRate">USD/TWD 匯率：</span>
+        <span id="fxRate">-</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="colModal">
+  <div class="modal">
+    <h2>⚙️ <span data-i18n="columnSettings">欄位設定</span></h2>
+    <p class="modal-hint" data-i18n="colModalHint">拖曳調整順序，勾選顯示／取消勾選隱藏。「拖曳手把」「市場」「股票代號」「刪除」為固定欄位。</p>
+    <div class="col-list" id="colList"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="btnResetCols" data-i18n="reset">重設預設</button>
+      <button class="btn-primary" id="btnCloseModal" data-i18n="done">完成</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const I18N = {
+  zh: {
+    title: "📊 投資組合追蹤器",
+    update: "更新股價", addRow: "新增列", pdf: "匯出 PDF", share: "分享連結", clear: "清除全部",
+    columns: "欄位設定", columnSettings: "欄位設定",
+    colModalHint: "拖曳調整順序，勾選顯示／取消勾選隱藏。「拖曳手把」「市場」「股票代號」「刪除」為固定欄位。",
+    reset: "重設預設", done: "完成",
+    market: "市場", symbol: "股票代號", shares: "持有股數", cost: "成本均價(選填)",
+    price: "最新股價", prevClose: "昨收價", changePrice: "漲跌價",
+    changePct: "漲跌%", changeVal: "單日盈虧",
+    currentValue: "目前淨值", openPnL: "開倉盈虧", roi: "獲利率%",
+    dayPnL: "當日總盈虧：", dayPct: "當日漲跌：",
+    totalValue: "💼 目前總淨值：", totalPnL: "📈 開倉總盈虧：",
+    fxRate: "USD/TWD 匯率：",
+    tw: "台股", us: "美股",
+    fetching: "正在更新股價...", done2: "更新完成！", err: "更新失敗：",
+    shareCopied: "分享連結已複製到剪貼簿！",
+    confirmClear: "確定要清除所有資料嗎？",
+    partial: "部分成功：",
+    dragHint: "💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位"
+  },
+  en: {
+    title: "📊 Portfolio Tracker",
+    update: "Update Prices", addRow: "Add Row", pdf: "Export PDF", share: "Share Link", clear: "Clear All",
+    columns: "Columns", columnSettings: "Column Settings",
+    colModalHint: "Drag to reorder, check/uncheck to show/hide. Drag handle, Market, Symbol and Delete are fixed.",
+    reset: "Reset Default", done: "Done",
+    market: "Market", symbol: "Symbol", shares: "Shares", cost: "Avg Cost (optional)",
+    price: "Latest Price", prevClose: "Prev Close", changePrice: "Chg Price",
+    changePct: "Chg %", changeVal: "Day P/L",
+    currentValue: "Current Value", openPnL: "Open P/L", roi: "ROI %",
+    dayPnL: "Today's P/L: ", dayPct: "Day Change: ",
+    totalValue: "💼 Total Value: ", totalPnL: "📈 Total Open P/L: ",
+    fxRate: "USD/TWD Rate: ",
+    tw: "TW", us: "US",
+    fetching: "Fetching prices...", done2: "Updated!", err: "Error: ",
+    shareCopied: "Share link copied to clipboard!",
+    confirmClear: "Clear all data?",
+    partial: "Partial success: ",
+    dragHint: "💡 Tip: Drag ⋮⋮ on the left to reorder rows; drag column headers to reorder columns; click ⚙️ Columns to show/hide."
+  }
+};
+
+const COLUMN_DEFS = {
+  drag:        { key: "drag",        i18n: null,           width: "28px", fixed: true,  render: "drag" },
+  market:      { key: "market",      i18n: "market",       width: "70px", fixed: true,  render: "market" },
+  symbol:      { key: "symbol",      i18n: "symbol",       width: "95px", fixed: true,  render: "symbol" },
+  shares:      { key: "shares",      i18n: "shares",       width: "95px", fixed: false, render: "shares" },
+  cost:        { key: "cost",        i18n: "cost",         width: "130px",fixed: false, render: "cost" },
+  price:       { key: "price",       i18n: "price",        width: "auto", fixed: false, render: "price" },
+  prevClose:   { key: "prevClose",   i18n: "prevClose",    width: "auto", fixed: false, render: "prevClose" },
+  changePrice: { key: "changePrice", i18n: "changePrice",  width: "auto", fixed: false, render: "changePrice" },
+  changePct:   { key: "changePct",   i18n: "changePct",    width: "auto", fixed: false, render: "changePct" },
+  changeVal:   { key: "changeVal",   i18n: "changeVal",    width: "auto", fixed: false, render: "changeVal" },
+  currentValue:{ key: "currentValue",i18n: "currentValue", width: "auto", fixed: false, render: "currentValue" },
+  openPnL:     { key: "openPnL",     i18n: "openPnL",      width: "auto", fixed: false, render: "openPnL" },
+  roi:         { key: "roi",         i18n: "roi",          width: "auto", fixed: false, render: "roi" },
+  del:         { key: "del",         i18n: null,           width: "35px", fixed: true,  render: "del" }
+};
+
+const DEFAULT_COLUMNS = [
+  { key: "drag",         visible: true },
+  { key: "market",       visible: true },
+  { key: "symbol",       visible: true },
+  { key: "shares",       visible: true },
+  { key: "cost",         visible: true },
+  { key: "price",        visible: true },
+  { key: "prevClose",    visible: true },
+  { key: "changePrice",  visible: true },
+  { key: "changePct",    visible: true },
+  { key: "changeVal",    visible: true },
+  { key: "currentValue", visible: true },
+  { key: "openPnL",      visible: true },
+  { key: "roi",          visible: true },
+  { key: "del",          visible: true }
+];
+
+let state = {
+  lang: "zh", currency: "TWD", colorMode: "tw",
+  rows: [], fxRate: null,
+  columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS))
+};
+const STORAGE_KEY = "portfolio_tracker_v1";
+
+function saveState() {
+  const toSave = {
+    lang: state.lang, currency: state.currency, colorMode: state.colorMode,
+    rows: state.rows, columns: state.columns
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+function loadState() {
+  const hash = window.location.hash;
+  if (hash.startsWith("#data=")) {
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(hash.slice(6)))));
+      Object.assign(state, decoded);
+    } catch (e) { console.warn("Bad share link", e); }
+  } else {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { try { Object.assign(state, JSON.parse(raw)); } catch(e){} }
+  }
+  if (!state.columns || !Array.isArray(state.columns)) {
+    state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
+  } else {
+    const existingKeys = state.columns.map(c => c.key);
+    DEFAULT_COLUMNS.forEach(def => {
+      if (!existingKeys.includes(def.key)) state.columns.push({ key: def.key, visible: true });
+    });
+    state.columns = state.columns.filter(c => COLUMN_DEFS[c.key]);
+  }
+}
+
+function detectMarket(symbol) {
+  if (!symbol) return "";
+  const s = symbol.trim().toUpperCase();
+  if (/^\d{4,6}[A-Z]?$/.test(s)) return "tw";
+  if (/^[A-Z]{1,5}$/.test(s)) return "us";
+  return "";
+}
+function fmtNum(n, d) { if(d==null)d=2; if(n==null||isNaN(n))return"-"; return Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fmtPct(n) { if(n==null||isNaN(n))return"-"; return (n>=0?"+":"")+n.toFixed(2)+"%"; }
+function fmtSigned(n, d) { if(d==null)d=2; if(n==null||isNaN(n))return"-"; return (n>=0?"+":"")+fmtNum(n,d); }
+function colorClass(n) { if(n==null||isNaN(n)||n===0)return"flat"; return n>0?"up":"down"; }
+function applyColorMode() {
+  const root = document.documentElement;
+  if (state.colorMode === "tw") {
+    root.style.setProperty("--up-color", "#ef5350"); root.style.setProperty("--down-color", "#26a69a");
+  } else {
+    root.style.setProperty("--up-color", "#26a69a"); root.style.setProperty("--down-color", "#ef5350");
+  }
+}
+
+function applyI18n() {
+  const t = I18N[state.lang];
+  document.getElementById("title").textContent = t.title;
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const k = el.getAttribute("data-i18n");
+    if (t[k]) el.textContent = t[k];
+  });
+  document.getElementById("dragHint").textContent = t.dragHint;
+}
+
+function makeRow(d) {
+  d = d || {};
+  return { market:d.market||"", symbol:d.symbol||"", shares:d.shares||"", cost:d.cost||"",
+    price:d.price!=null?d.price:null, prevClose:d.prevClose!=null?d.prevClose:null,
+    currency:d.currency||"", error:d.error||null };
+}
+
+function getVisibleColumns() {
+  return state.columns.filter(c => c.visible).map(c => COLUMN_DEFS[c.key]).filter(Boolean);
+}
+
+function computeRowData(row) {
+  const shares = parseFloat(row.shares)||0;
+  const cost = parseFloat(row.cost)||0;
+  const price = row.price, prev = row.prevClose;
+  let dayPct=null, dayPnL=null, changePrice=null, curValOrig=null, openPnL=null, roi=null;
+  if (price!==null && !isNaN(price)) {
+    if (prev && prev>0) {
+      changePrice = price - prev;
+      dayPct = changePrice / prev * 100;
+      dayPnL = changePrice * shares;
+    }
+    curValOrig = price * shares;
+    if (cost>0) {
+      openPnL = (price-cost)*shares;
+      roi = (price - cost) / cost * 100;
+    }
+  }
+  const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
+  const toDisp = function(v) { return v==null||isNaN(v)?null:convertCurrency(v, rowCurrency, state.currency); };
+  return {
+    shares, cost, price, prev, dayPct, dayPnL, changePrice, curValOrig, openPnL, roi,
+    rowCurrency,
+    dispDayPnL: toDisp(dayPnL),
+    dispCurVal: toDisp(curValOrig),
+    dispOpenPnL: toDisp(openPnL)
+  };
+}
+
+function renderCell(col, row, idx, data) {
+  const td = document.createElement("td");
+  const t = I18N[state.lang];
+  switch(col.render) {
+    case "drag":
+      td.innerHTML = '<span class="drag-handle" title="拖曳排序">⋮⋮</span>';
+      break;
+    case "market":
+      td.innerHTML = '<select class="market-select" data-idx="'+idx+'" data-field="market">'+
+        '<option value="tw"'+(row.market==="tw"?" selected":"")+'>'+t.tw+'</option>'+
+        '<option value="us"'+(row.market==="us"?" selected":"")+'>'+t.us+'</option></select>';
+      break;
+    case "symbol":
+      td.innerHTML = '<input type="text" data-idx="'+idx+'" data-field="symbol" value="'+row.symbol+'" placeholder="2330 / AAPL" style="text-transform:uppercase">';
+      break;
+    case "shares":
+      td.innerHTML = '<input type="number" class="num" data-idx="'+idx+'" data-field="shares" value="'+row.shares+'" placeholder="0" min="0" step="any">';
+      break;
+    case "cost":
+      const rowCurrencyLabel = row.market === "us" ? "USD" : (row.market === "tw" ? "TWD" : "");
+      td.innerHTML = '<div class="cost-wrap">'+
+        '<input type="number" class="num" data-idx="'+idx+'" data-field="cost" value="'+row.cost+'" placeholder="-" min="0" step="any">'+
+        '<span class="cost-currency" data-cost-currency="'+idx+'">'+rowCurrencyLabel+'</span>'+
+        '</div>';
+      break;
+    case "price":
+      td.className = "col-output";
+      if (row.error) {
+        td.innerHTML = '<span style="color:#ef5350;font-size:11px" title="'+row.error+'">⚠ '+row.error.slice(0,18)+'</span>';
+      } else {
+        td.textContent = data.price!==null ? fmtNum(data.price,2)+" "+data.rowCurrency : "-";
+      }
+      break;
+    case "prevClose":
+      td.className = "col-output flat";
+      td.textContent = data.prev!==null && !isNaN(data.prev) ? fmtNum(data.prev,2) : "-";
+      break;
+    case "changePrice":
+      td.className = "col-output " + colorClass(data.changePrice);
+      td.textContent = fmtSigned(data.changePrice, 2);
+      break;
+    case "changePct":
+      td.className = "col-output " + colorClass(data.dayPct);
+      td.textContent = fmtPct(data.dayPct);
+      break;
+    case "changeVal":
+      td.className = "col-output " + colorClass(data.dispDayPnL);
+      td.textContent = fmtSigned(data.dispDayPnL,0);
+      break;
+    case "currentValue":
+      td.className = "col-output";
+      td.textContent = data.dispCurVal!==null?fmtNum(data.dispCurVal,0):"-";
+      break;
+    case "openPnL":
+      td.className = "col-output " + colorClass(data.dispOpenPnL);
+      td.textContent = data.dispOpenPnL!==null?fmtSigned(data.dispOpenPnL,0):"-";
+      break;
+    case "roi":
+      td.className = "col-output " + colorClass(data.roi);
+      td.textContent = fmtPct(data.roi);
+      break;
+    case "del":
+      td.innerHTML = '<button class="del-btn" data-idx="'+idx+'">✕</button>';
+      break;
+  }
+  return td;
+}
+
+function renderTable() {
+  const cols = getVisibleColumns();
+  const t = I18N[state.lang];
+
+  const colgroup = document.getElementById("tableColgroup");
+  colgroup.innerHTML = "";
+  cols.forEach(col => {
+    const c = document.createElement("col");
+    if (col.width && col.width !== "auto") c.style.width = col.width;
+    colgroup.appendChild(c);
+  });
+
+  const thead = document.getElementById("tableHead");
+  thead.innerHTML = "";
+  cols.forEach(col => {
+    const th = document.createElement("th");
+    th.setAttribute("data-colkey", col.key);
+    if (col.i18n && t[col.i18n]) {
+      if (!col.fixed) {
+        th.classList.add("draggable-col");
+        th.setAttribute("draggable", "true");
+        th.innerHTML = '<span class="col-grip">⋮⋮</span>' + t[col.i18n];
+      } else {
+        th.textContent = t[col.i18n];
+      }
+    } else {
+      th.textContent = col.key === "del" ? "✕" : "";
+    }
+    thead.appendChild(th);
+  });
+
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  state.rows.forEach((row, idx) => {
+    const tr = document.createElement("tr");
+    tr.className = "row-item";
+    tr.setAttribute("draggable", "true");
+    tr.setAttribute("data-idx", idx);
+    const data = computeRowData(row);
+    cols.forEach(col => {
+      tr.appendChild(renderCell(col, row, idx, data));
+    });
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll("input, select").forEach(el => {
+    el.addEventListener("change", onCellChange);
+    el.addEventListener("input", onCellChange);
+  });
+  tbody.querySelectorAll("input, select, button").forEach(el => {
+    el.addEventListener("mousedown", function(e) { e.stopPropagation(); });
+    el.setAttribute("draggable", "false");
+  });
+  tbody.querySelectorAll(".del-btn").forEach(b => {
+    b.addEventListener("click", function() {
+      state.rows.splice(parseInt(b.dataset.idx),1);
+      saveState(); renderTable();
+    });
+  });
+
+  bindRowDragEvents(tbody);
+  bindColumnDragEvents(thead);
+
+  renderSummary();
+}
+
+let dragSrcIdx = null;
+function bindRowDragEvents(tbody) {
+  const rows = tbody.querySelectorAll("tr.row-item");
+  rows.forEach(tr => {
+    tr.addEventListener("dragstart", function(e) {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "BUTTON") {
+        e.preventDefault(); return;
+      }
+      dragSrcIdx = parseInt(tr.getAttribute("data-idx"));
+      tr.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", "row:"+dragSrcIdx); } catch(_) {}
+    });
+    tr.addEventListener("dragend", function() {
+      tr.classList.remove("dragging");
+      tbody.querySelectorAll(".drag-over").forEach(r => r.classList.remove("drag-over"));
+      dragSrcIdx = null;
+    });
+    tr.addEventListener("dragover", function(e) {
+      if (dragSrcIdx === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      tbody.querySelectorAll(".drag-over").forEach(r => r.classList.remove("drag-over"));
+      tr.classList.add("drag-over");
+    });
+    tr.addEventListener("dragleave", function() {
+      tr.classList.remove("drag-over");
+    });
+    tr.addEventListener("drop", function(e) {
+      if (dragSrcIdx === null) return;
+      e.preventDefault();
+      const targetIdx = parseInt(tr.getAttribute("data-idx"));
+      if (dragSrcIdx === targetIdx) return;
+      const moved = state.rows.splice(dragSrcIdx, 1)[0];
+      state.rows.splice(targetIdx, 0, moved);
+      saveState(); renderTable();
+    });
+  });
+}
+
+let dragColKey = null;
+function bindColumnDragEvents(thead) {
+  const ths = thead.querySelectorAll("th.draggable-col");
+  ths.forEach(th => {
+    th.addEventListener("dragstart", function(e) {
+      dragColKey = th.getAttribute("data-colkey");
+      th.classList.add("col-dragging");
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", "col:"+dragColKey); } catch(_) {}
+    });
+    th.addEventListener("dragend", function() {
+      th.classList.remove("col-dragging");
+      thead.querySelectorAll(".col-drag-over").forEach(t => t.classList.remove("col-drag-over"));
+      dragColKey = null;
+    });
+    th.addEventListener("dragover", function(e) {
+      if (!dragColKey) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      thead.querySelectorAll(".col-drag-over").forEach(t => t.classList.remove("col-drag-over"));
+      th.classList.add("col-drag-over");
+    });
+    th.addEventListener("dragleave", function() {
+      th.classList.remove("col-drag-over");
+    });
+    th.addEventListener("drop", function(e) {
+      if (!dragColKey) return;
+      e.preventDefault();
+      const targetKey = th.getAttribute("data-colkey");
+      if (dragColKey === targetKey) return;
+      moveColumn(dragColKey, targetKey);
+      saveState(); renderTable();
+    });
+  });
+}
+
+function moveColumn(srcKey, targetKey) {
+  const srcIdx = state.columns.findIndex(c => c.key === srcKey);
+  if (srcIdx < 0) return;
+  const moved = state.columns.splice(srcIdx, 1)[0];
+  const newTargetIdx = state.columns.findIndex(c => c.key === targetKey);
+  if (newTargetIdx < 0) state.columns.push(moved);
+  else state.columns.splice(newTargetIdx, 0, moved);
+}
+
+function openColModal() {
+  renderColList();
+  document.getElementById("colModal").classList.add("show");
+}
+function closeColModal() {
+  document.getElementById("colModal").classList.remove("show");
+}
+function renderColList() {
+  const t = I18N[state.lang];
+  const list = document.getElementById("colList");
+  list.innerHTML = "";
+  state.columns.forEach((col, idx) => {
+    const def = COLUMN_DEFS[col.key];
+    if (!def) return;
+    const labelText = def.i18n ? t[def.i18n] : (col.key === "drag" ? "↕ (拖曳手把)" : (col.key === "del" ? "✕ (刪除)" : col.key));
+    const div = document.createElement("div");
+    div.className = "col-item" + (def.fixed ? " locked" : "");
+    div.setAttribute("data-colkey", col.key);
+    if (!def.fixed) div.setAttribute("draggable", "true");
+    div.innerHTML =
+      '<span class="grip">⋮⋮</span>'+
+      '<input type="checkbox" '+(col.visible?"checked":"")+(def.fixed?" disabled":"")+' data-colkey="'+col.key+'">'+
+      '<span class="col-name">'+labelText+'</span>'+
+      (def.fixed ? '<span style="font-size:10px;color:#78909c;">🔒</span>' : '');
+    list.appendChild(div);
+  });
+
+  list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.addEventListener("change", function() {
+      const key = cb.getAttribute("data-colkey");
+      const col = state.columns.find(c => c.key === key);
+      if (col) {
+        col.visible = cb.checked;
+        saveState(); renderTable();
+      }
+    });
+  });
+
+  let modalDragKey = null;
+  list.querySelectorAll(".col-item").forEach(item => {
+    if (item.classList.contains("locked")) return;
+    item.addEventListener("dragstart", function(e) {
+      modalDragKey = item.getAttribute("data-colkey");
+      item.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    item.addEventListener("dragend", function() {
+      item.classList.remove("dragging");
+      list.querySelectorAll(".drag-over").forEach(i => i.classList.remove("drag-over"));
+      modalDragKey = null;
+    });
+    item.addEventListener("dragover", function(e) {
+      if (!modalDragKey) return;
+      e.preventDefault();
+      list.querySelectorAll(".drag-over").forEach(i => i.classList.remove("drag-over"));
+      item.classList.add("drag-over");
+    });
+    item.addEventListener("dragleave", function() { item.classList.remove("drag-over"); });
+    item.addEventListener("drop", function(e) {
+      if (!modalDragKey) return;
+      e.preventDefault();
+      const targetKey = item.getAttribute("data-colkey");
+      if (modalDragKey === targetKey) return;
+      moveColumn(modalDragKey, targetKey);
+      saveState();
+      renderColList();
+      renderTable();
+    });
+  });
+}
+
+function resetColumns() {
+  state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
+  saveState();
+  renderColList();
+  renderTable();
+}
+
+// ★ 修正後的 onCellChange：股票代號輸入不會失焦
+function onCellChange(e) {
+  const idx = parseInt(e.target.dataset.idx);
+  const field = e.target.dataset.field;
+  let v = e.target.value;
+
+  if (field === "symbol") {
+    const upperV = v.toUpperCase();
+    if (v !== upperV) {
+      const pos = e.target.selectionStart;
+      e.target.value = upperV;
+      try { e.target.setSelectionRange(pos, pos); } catch(_) {}
+      v = upperV;
+    }
+    state.rows[idx].symbol = v;
+    const m = detectMarket(v);
+    if (m && state.rows[idx].market !== m) {
+      state.rows[idx].market = m;
+      updateRowMarketUI(idx);
+    }
+    state.rows[idx].error = null;
+  } else if (field === "market") {
+    state.rows[idx].market = v;
+    updateRowMarketUI(idx);
+  } else {
+    state.rows[idx][field] = v;
+  }
+
+  scheduleSave();
+  if (field==="shares" || field==="cost") renderSummary();
+}
+
+let saveTimer = null;
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){ saveState(); saveTimer = null; }, 250);
+}
+
+function updateRowMarketUI(idx) {
+  const tbody = document.getElementById("tableBody");
+  if (!tbody) return;
+  const marketSel = tbody.querySelector('select[data-idx="'+idx+'"][data-field="market"]');
+  if (marketSel) marketSel.value = state.rows[idx].market || "";
+  const costLabel = tbody.querySelector('[data-cost-currency="'+idx+'"]');
+  if (costLabel) {
+    const m = state.rows[idx].market;
+    costLabel.textContent = m === "us" ? "USD" : (m === "tw" ? "TWD" : "");
+  }
+}
+
+function renderSummary() {
+  let totalCur=0, totalDayPnL=0, totalPrevValue=0, totalCost=0;
+  let hasPrice=false, hasCost=false;
+  state.rows.forEach(row => {
+    const shares = parseFloat(row.shares)||0;
+    const cost = parseFloat(row.cost)||0;
+    const price = row.price, prev = row.prevClose;
+    if (!shares || price===null || isNaN(price)) return;
+    hasPrice = true;
+    const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
+    totalCur += convertCurrency(price*shares, rowCurrency, state.currency);
+    if (prev && prev>0) {
+      totalDayPnL += convertCurrency((price-prev)*shares, rowCurrency, state.currency);
+      totalPrevValue += convertCurrency(prev*shares, rowCurrency, state.currency);
+    }
+    if (cost>0) { hasCost = true; totalCost += convertCurrency(cost*shares, rowCurrency, state.currency); }
+  });
+
+  document.getElementById("todayDate").textContent = new Date().toISOString().slice(0,10);
+  const dayPctEl=document.getElementById("dayPct"), dayPnLEl=document.getElementById("dayPnL");
+  const totValEl=document.getElementById("totalValue"), totPnLEl=document.getElementById("totalPnL");
+  const fxEl=document.getElementById("fxRate");
+
+  if (hasPrice && totalPrevValue>0) {
+    const pct = totalDayPnL/totalPrevValue*100;
+    dayPctEl.textContent = fmtPct(pct); dayPctEl.className = "summary-value "+colorClass(pct);
+    dayPnLEl.textContent = fmtSigned(totalDayPnL,0)+" "+state.currency; dayPnLEl.className = "summary-value "+colorClass(totalDayPnL);
+  } else {
+    dayPctEl.textContent="-"; dayPnLEl.textContent="-";
+    dayPctEl.className="summary-value flat"; dayPnLEl.className="summary-value flat";
+  }
+  totValEl.textContent = hasPrice?fmtNum(totalCur,0)+" "+state.currency:"-";
+  if (hasCost && hasPrice) {
+    const openPnL = totalCur - totalCost;
+    const openPct = totalCost>0?openPnL/totalCost*100:0;
+    totPnLEl.textContent = fmtSigned(openPnL,0)+" "+state.currency+" ("+fmtPct(openPct)+")";
+    totPnLEl.className = "summary-value "+colorClass(openPnL);
+  } else {
+    totPnLEl.textContent="-"; totPnLEl.className="summary-value flat";
+  }
+  fxEl.textContent = state.fxRate?state.fxRate.toFixed(4):"-";
+}
+
+function convertCurrency(val, from, to) {
+  if (from===to) return val;
+  if (!state.fxRate) return val;
+  if (from==="USD"&&to==="TWD") return val*state.fxRate;
+  if (from==="TWD"&&to==="USD") return val/state.fxRate;
+  return val;
+}
+async function fetchFxRate() {
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD");
+    const json = await res.json();
+    if (json && json.rates && json.rates.TWD) {
+      state.fxRate = json.rates.TWD;
+      console.log("[FX] USD/TWD =", state.fxRate); return;
+    }
+  } catch(e) { console.warn("[FX] Failed", e); }
+  state.fxRate = state.fxRate || 32.0;
+}
+
+async function fetchWithTimeout(url, opts, timeout) {
+  timeout = timeout || 15000;
+  const controller = new AbortController();
+  const id = setTimeout(function(){ controller.abort(); }, timeout);
+  try {
+    const res = await fetch(url, Object.assign({}, opts||{}, { signal: controller.signal }));
+    clearTimeout(id); return res;
+  } catch(e) { clearTimeout(id); throw e; }
+}
+
+const PROXIES = [
+  { name: "allorigins",  build: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u) },
+  { name: "corsproxy.io",build: u => "https://corsproxy.io/?" + encodeURIComponent(u) },
+  { name: "codetabs",    build: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u) },
+  { name: "thingproxy",  build: u => "https://thingproxy.freeboard.io/fetch/" + u },
+  { name: "cors.sh",     build: u => "https://proxy.cors.sh/" + u }
+];
+
+let lastGoodProxyIdx = 0;
+
+async function fetchViaProxy(url, asJson) {
+  const order = [];
+  for (let i=0; i<PROXIES.length; i++) {
+    order.push((lastGoodProxyIdx + i) % PROXIES.length);
+  }
+  let lastErr = null;
+  for (const idx of order) {
+    const proxy = PROXIES[idx];
+    const purl = proxy.build(url);
+    try {
+      const res = await fetchWithTimeout(purl, {
+        headers: { "Accept": "application/json, text/plain, */*" }
+      }, 12000);
+      if (!res.ok) {
+        lastErr = new Error("HTTP " + res.status);
+        console.warn("  [" + proxy.name + "] HTTP " + res.status);
+        continue;
+      }
+      const text = await res.text();
+      if (!text || text.length < 5) { lastErr = new Error("Empty"); continue; }
+      if (text.trim().toLowerCase().startsWith("<")) {
+        lastErr = new Error("HTML response");
+        console.warn("  [" + proxy.name + "] got HTML, skip");
+        continue;
+      }
+      if (asJson) {
+        try {
+          const json = JSON.parse(text);
+          lastGoodProxyIdx = idx;
+          console.log("  [" + proxy.name + "] ✓");
+          return json;
+        } catch(e) { lastErr = new Error("Bad JSON"); continue; }
+      }
+      lastGoodProxyIdx = idx;
+      return text;
+    } catch(e) {
+      lastErr = e;
+      console.warn("  [" + proxy.name + "] " + e.message);
+    }
+  }
+  throw lastErr || new Error("All proxies failed");
+}
+
+function parseYahooResult(result) {
+  const meta = result.meta;
+  const quote = result.indicators && result.indicators.quote && result.indicators.quote[0];
+  const closes = quote && quote.close ? quote.close : [];
+  const timestamps = result.timestamp || [];
+  const pairs = [];
+  for (let i=0; i<closes.length; i++) {
+    if (closes[i] != null && !isNaN(closes[i])) {
+      pairs.push({ ts: timestamps[i], close: closes[i] });
+    }
+  }
+  let price = meta.regularMarketPrice;
+  if (price == null || isNaN(price) || price <= 0) {
+    price = pairs.length > 0 ? pairs[pairs.length-1].close : null;
+  }
+  let prevClose = null;
+  if (pairs.length >= 2) {
+    const lastClose = pairs[pairs.length-1].close;
+    const isSameAsLastClose = price && Math.abs(price - lastClose) / lastClose < 0.001;
+    if (isSameAsLastClose) prevClose = pairs[pairs.length-2].close;
+    else prevClose = lastClose;
+  } else {
+    prevClose = meta.chartPreviousClose || meta.previousClose;
+  }
+  return { price: price, prevClose: prevClose };
+}
+
+async function fetchTWPrice(symbol) {
+  symbol = symbol.trim().toUpperCase();
+  let lastErr = null;
+  const candidates = [symbol + ".TW", symbol + ".TWO"];
+  for (let i=0; i<candidates.length; i++) {
+    const ticker = candidates[i];
+    const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + ticker + "?interval=1d&range=10d";
+    try {
+      console.log("[TW] Trying Yahoo " + ticker);
+      const json = await fetchViaProxy(url, true);
+      const result = json && json.chart && json.chart.result && json.chart.result[0];
+      if (result) {
+        const data = parseYahooResult(result);
+        if (data.price && data.price > 0) {
+          console.log("[TW] ✓ Yahoo " + ticker + " price=" + data.price + " prev=" + data.prevClose);
+          return data;
+        }
+      }
+      lastErr = new Error("Yahoo no data " + ticker);
+    } catch(e) { lastErr = e; console.warn("[TW] Yahoo " + ticker + " failed: " + e.message); }
+  }
+  try {
+    console.log("[TW] Trying TWSE OpenAPI " + symbol);
+    const url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL";
+    const json = await fetchViaProxy(url, true);
+    if (Array.isArray(json)) {
+      const found = json.find(function(x) { return x.Code === symbol; });
+      if (found) {
+        const price = parseFloat(found.ClosingPrice);
+        const change = parseFloat(found.Change);
+        const prevClose = price - change;
+        if (price > 0) {
+          console.log("[TW] ✓ TWSE " + symbol + " price=" + price + " prev=" + prevClose);
+          return { price: price, prevClose: prevClose };
+        }
+      }
+    }
+  } catch(e) { console.warn("[TW] TWSE OpenAPI failed: " + e.message); }
+  throw lastErr || new Error("台股 " + symbol + " 全部來源失敗");
+}
+
+async function fetchUSPrice(symbol) {
+  symbol = symbol.trim().toUpperCase();
+  const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=10d";
+  console.log("[US] Trying " + symbol);
+  const json = await fetchViaProxy(url, true);
+  const result = json && json.chart && json.chart.result && json.chart.result[0];
+  if (!result) throw new Error("No data " + symbol);
+  const data = parseYahooResult(result);
+  if (!data.price || data.price <= 0) throw new Error("No valid price " + symbol);
+  console.log("[US] ✓ " + symbol + " price=" + data.price + " prev=" + data.prevClose);
+  return data;
+}
+
+async function fetchPrice(market, symbol) {
+  if (market === "tw") return fetchTWPrice(symbol);
+  return fetchUSPrice(symbol);
+}
+
+async function fetchPriceWithRetry(market, symbol, retries) {
+  retries = retries || 1;
+  let lastErr = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try { return await fetchPrice(market, symbol); }
+    catch(e) {
+      lastErr = e;
+      if (attempt < retries) {
+        console.log("[Retry] " + symbol + " attempt " + (attempt+2) + "/" + (retries+1));
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+function countValidRows() {
+  return state.rows.filter(r => r.symbol && r.market).length;
+}
+
+async function updateAllPrices() {
+  showStatus(I18N[state.lang].fetching, "info", true);
+  await fetchFxRate();
+  let okCount = 0, failCount = 0;
+  const total = countValidRows();
+  for (let idx = 0; idx < state.rows.length; idx++) {
+    const row = state.rows[idx];
+    if (!row.symbol || !row.market) continue;
+    try {
+      const data = await fetchPriceWithRetry(row.market, row.symbol, 1);
+      if (data && data.price) {
+        state.rows[idx].price = data.price;
+        state.rows[idx].prevClose = data.prevClose;
+        state.rows[idx].currency = row.market==="us"?"USD":"TWD";
+        state.rows[idx].error = null;
+        okCount++;
+      } else { state.rows[idx].error = "No data"; failCount++; }
+    } catch(e) {
+      state.rows[idx].error = (e.message || "fail").substring(0, 30);
+      failCount++;
+      console.error("[Update] ✗ " + row.symbol + ":", e.message);
+    }
+    showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount)+"/" + total + ")", "info", true);
+    await new Promise(r => setTimeout(r, 200));
+  }
+  saveState(); renderTable();
+  if (failCount === 0 && okCount > 0) showStatus(I18N[state.lang].done2 + " ("+okCount+")", "success");
+  else if (okCount > 0) showStatus(I18N[state.lang].partial + okCount + " ✓ / " + failCount + " ✗", "info");
+  else if (failCount > 0) showStatus(I18N[state.lang].err + failCount + " 檔失敗，請按 F12 看 Console", "error");
+  else showStatus("請先輸入股票代號", "info");
+}
+
+function showStatus(msg, type, loading) {
+  const el = document.getElementById("status");
+  el.className = "status show " + (type||"info");
+  el.innerHTML = (loading?'<span class="spinner"></span>':"") + msg;
+  if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 5000);
+}
+
+async function exportPDF() {
+  showStatus("Generating PDF...", "info", true);
+  try {
+    const jsPDF = window.jspdf.jsPDF;
+    const app = document.getElementById("app");
+    const canvas = await html2canvas(app, {
+      backgroundColor: "#1a1f3a", scale: 2, useCORS: true,
+      windowWidth: app.scrollWidth, windowHeight: app.scrollHeight
+    });
+    const pdf = new jsPDF("l", "mm", "a4");
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 5;
+    const usableW = pageW - margin * 2;
+    const usableH = pageH - margin * 2;
+    const imgPxW = canvas.width, imgPxH = canvas.height;
+    const imgMmH = imgPxH * (usableW / imgPxW);
+    if (imgMmH <= usableH) {
+      const offsetY = (pageH - imgMmH) / 2;
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, offsetY, usableW, imgMmH);
+    } else {
+      const pagePxH = (usableH / imgMmH) * imgPxH;
+      let yOffsetPx = 0, pageNum = 0;
+      while (yOffsetPx < imgPxH) {
+        const sliceH = Math.min(pagePxH, imgPxH - yOffsetPx);
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = imgPxW; sliceCanvas.height = sliceH;
+        const ctx = sliceCanvas.getContext("2d");
+        ctx.drawImage(canvas, 0, yOffsetPx, imgPxW, sliceH, 0, 0, imgPxW, sliceH);
+        const sliceMmH = sliceH * (usableW / imgPxW);
+        if (pageNum > 0) pdf.addPage("a4", "l");
+        pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", margin, margin, usableW, sliceMmH);
+        yOffsetPx += sliceH; pageNum++;
+      }
+    }
+    pdf.save("portfolio_" + new Date().toISOString().slice(0,10) + ".pdf");
+    showStatus("PDF saved!", "success");
+  } catch(e) { console.error("PDF error:", e); showStatus("PDF failed: " + e.message, "error"); }
+}
+
+function generateShareLink() {
+  const payload = {
+    lang:state.lang, currency:state.currency, colorMode:state.colorMode,
+    columns: state.columns,
+    rows: state.rows.map(function(r) { return { market:r.market, symbol:r.symbol, shares:r.shares, cost:r.cost }; })
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const url = window.location.origin + window.location.pathname + "#data=" + encoded;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function(){
+      showStatus(I18N[state.lang].shareCopied, "success");
+    }).catch(function(){ prompt("Share link:", url); });
+  } else { prompt("Share link:", url); }
+}
+
+function init() {
+  loadState();
+  if (state.rows.length === 0) { for (let i=0; i<10; i++) state.rows.push(makeRow()); }
+  document.getElementById("langSelect").value = state.lang;
+  document.getElementById("currencySelect").value = state.currency;
+  document.getElementById("colorSelect").value = state.colorMode;
+  applyColorMode(); applyI18n(); renderTable();
+
+  document.getElementById("langSelect").addEventListener("change", function(e) {
+    state.lang = e.target.value; saveState(); applyI18n(); renderTable();
+  });
+  document.getElementById("currencySelect").addEventListener("change", function(e) {
+    state.currency = e.target.value; saveState(); renderTable();
+  });
+  document.getElementById("colorSelect").addEventListener("change", function(e) {
+    state.colorMode = e.target.value; saveState(); applyColorMode(); renderTable();
+  });
+  document.getElementById("btnUpdate").addEventListener("click", updateAllPrices);
+  document.getElementById("btnAdd").addEventListener("click", function() {
+    state.rows.push(makeRow()); saveState(); renderTable();
+  });
+  document.getElementById("btnColumns").addEventListener("click", openColModal);
+  document.getElementById("btnCloseModal").addEventListener("click", closeColModal);
+  document.getElementById("btnResetCols").addEventListener("click", resetColumns);
+  document.getElementById("colModal").addEventListener("click", function(e) {
+    if (e.target.id === "colModal") closeColModal();
+  });
+  document.getElementById("btnPdf").addEventListener("click", exportPDF);
+  document.getElementById("btnShare").addEventListener("click", generateShareLink);
+  document.getElementById("btnClear").addEventListener("click", function() {
+    if (confirm(I18N[state.lang].confirmClear)) {
+      state.rows = [];
+      for (let i=0; i<10; i++) state.rows.push(makeRow());
+      saveState(); renderTable();
+    }
+  });
+  fetchFxRate().then(function(){ renderSummary(); });
+}
+init();
+</script>
+</body>
+</html>
