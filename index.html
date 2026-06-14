@@ -6,6 +6,8 @@
 <title>投資組合追蹤器 | Portfolio Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -20,10 +22,7 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
-  }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
   .header h1 {
     font-size: 24px;
     background: linear-gradient(90deg, #64b5f6, #ba68c8);
@@ -55,6 +54,8 @@
   .btn-info   { background: linear-gradient(135deg, #0288d1, #01579b); border: none; }
   .btn-danger { background: linear-gradient(135deg, #e53935, #b71c1c); border: none; }
   .btn-secondary { background: linear-gradient(135deg, #546e7a, #37474f); border: none; }
+  .btn-excel { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: none; }
+  .btn-excel:hover { background: linear-gradient(135deg, #388e3c, #2e7d32); }
   .action-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
   .btn-update-main {
     font-size: 17px !important;
@@ -90,69 +91,36 @@
   th.draggable-col:active { cursor: grabbing; }
   th.col-dragging { opacity: 0.4; }
   th.col-drag-over { background: rgba(186,104,200,0.35) !important; border-left: 3px solid #ba68c8 !important; }
-  th .col-grip {
-    display: inline-block; font-size: 9px; color: #607d8b; margin-right: 3px; vertical-align: middle;
-  }
+  th .col-grip { display: inline-block; font-size: 9px; color: #607d8b; margin-right: 3px; vertical-align: middle; }
   td { padding: 5px 3px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
   tr.row-item { transition: background 0.15s; }
   tr.row-item:hover td { background: rgba(255,255,255,0.03); }
   tr.dragging { opacity: 0.4; background: rgba(94,53,177,0.2); }
   tr.drag-over td { border-top: 2px solid #ba68c8 !important; }
-  td input, td select {
-    width: 100%; text-align: center;
-    font-family: "SF Mono", Consolas, monospace; font-size: 13px; padding: 6px 4px;
-  }
+  td input, td select { width: 100%; text-align: center; font-family: "SF Mono", Consolas, monospace; font-size: 13px; padding: 6px 4px; }
   td input.num { text-align: right; padding-right: 6px; }
   .cost-wrap { display: flex; align-items: center; gap: 4px; }
   .cost-wrap input { flex: 1; min-width: 0; }
-  .cost-currency {
-    font-size: 11px; color: #90a4ae;
-    font-family: "SF Mono", Consolas, monospace;
-    min-width: 28px; text-align: left; font-weight: 600;
-  }
-  .drag-handle {
-    cursor: grab; color: #607d8b; font-size: 16px; user-select: none; padding: 4px;
-  }
+  .cost-currency { font-size: 11px; color: #90a4ae; font-family: "SF Mono", Consolas, monospace; min-width: 28px; text-align: left; font-weight: 600; }
+  .drag-handle { cursor: grab; color: #607d8b; font-size: 16px; user-select: none; padding: 4px; }
   .drag-handle:hover { color: #ba68c8; }
   .drag-handle:active { cursor: grabbing; }
   .col-output { font-family: "SF Mono", Consolas, monospace; font-weight: 500; }
   .up { color: var(--up-color, #ef5350); }
   .down { color: var(--down-color, #26a69a); }
   .flat { color: #b0bec5; }
-  .summary {
-    margin-top: 20px; padding: 24px 32px;
-    background: rgba(0,0,0,0.25); border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .summary-row {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(520px, auto);
-    align-items: center; gap: 12px;
-    padding: 10px 0;
-  }
-  .summary-row.divider {
-    border-top: 1px dashed rgba(255,255,255,0.15);
-    margin-top: 8px; padding-top: 18px;
-  }
-  .summary-row .summary-left {
-    color: #90a4ae; font-size: 17px; font-weight: 700; letter-spacing: 0.3px;
-  }
-  .summary-row .summary-right {
-    text-align: right; font-family: "SF Mono", Consolas, monospace; font-weight: 700;
-  }
-  .summary-row .summary-right .summary-value {
-    font-size: 22px; font-weight: 800;
-  }
+  .summary { margin-top: 20px; padding: 24px 32px; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  .summary-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(520px, auto); align-items: center; gap: 12px; padding: 10px 0; }
+  .summary-row.divider { border-top: 1px dashed rgba(255,255,255,0.15); margin-top: 8px; padding-top: 18px; }
+  .summary-row .summary-left { color: #90a4ae; font-size: 17px; font-weight: 700; letter-spacing: 0.3px; }
+  .summary-row .summary-right { text-align: right; font-family: "SF Mono", Consolas, monospace; font-weight: 700; }
+  .summary-row .summary-right .summary-value { font-size: 22px; font-weight: 800; }
   .summary-row.divider .summary-right .summary-value,
-  .summary-row.big-row .summary-right .summary-value {
-    font-size: 30px; font-weight: 900; letter-spacing: 0.5px;
-  }
+  .summary-row.big-row .summary-right .summary-value { font-size: 30px; font-weight: 900; letter-spacing: 0.5px; }
   .summary-row .sep { display: inline-block; margin: 0 14px; color: #455a64; }
   .summary-row.fx-row { display: flex; justify-content: flex-end; padding-top: 14px; }
   .summary-row.fx-row .summary-left { display: none; }
-  .summary-row.fx-row .summary-right {
-    font-size: 12px; color: #78909c; font-weight: 500;
-  }
+  .summary-row.fx-row .summary-right { font-size: 12px; color: #78909c; font-weight: 500; }
   .del-btn { background: transparent; border: none; color: #ef5350; cursor: pointer; font-size: 18px; padding: 4px 8px; }
   .del-btn:hover { color: #ff8a80; }
   .status { margin: 12px 0; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
@@ -168,10 +136,54 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .hint { font-size: 11px; color: #78909c; margin: -8px 0 12px 4px; }
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-    display: none; align-items: center; justify-content: center; z-index: 1000;
+
+  /* ★ 折線圖區塊 */
+  .chart-section {
+    margin-top: 20px; padding: 24px 32px;
+    background: rgba(0,0,0,0.25); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
   }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  .chart-title { font-size: 17px; font-weight: 700; color: #e8eaf6; }
+  .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chart-range-btn {
+    padding: 6px 12px; font-size: 12px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; border-radius: 6px; color: #b0bec5;
+  }
+  .chart-range-btn.active {
+    background: linear-gradient(135deg, #5e35b1, #7e57c2);
+    color: #fff; border-color: transparent;
+  }
+  .chart-canvas-wrap { position: relative; height: 320px; }
+  .chart-empty {
+    text-align: center; padding: 60px 20px; color: #78909c; font-size: 13px;
+  }
+
+  /* 注意事項區塊 */
+  .notice {
+    margin-top: 24px; padding: 20px 24px;
+    background: rgba(0,0,0,0.18); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; line-height: 1.7; color: #90a4ae;
+  }
+  .notice h3 {
+    color: #e8eaf6; font-size: 15px; font-weight: 700;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .notice ul { list-style: none; padding-left: 0; }
+  .notice li { padding: 4px 0; padding-left: 20px; position: relative; }
+  .notice li::before { content: "•"; position: absolute; left: 6px; color: #5e35b1; font-weight: bold; }
+  .notice .notice-section { margin-bottom: 16px; }
+  .notice .notice-section:last-child { margin-bottom: 0; }
+  .notice strong { color: #b39ddb; }
+  .notice .warn { color: #ffb74d; }
+  .notice .ok { color: #81c784; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
   .modal-backdrop.show { display: flex; }
   .modal {
     background: #2a2f4f; border-radius: 16px; padding: 24px;
@@ -180,56 +192,20 @@
     border: 1px solid rgba(255,255,255,0.1);
     max-height: 80vh; display: flex; flex-direction: column;
   }
-  .modal h2 {
-    font-size: 18px; margin-bottom: 8px; color: #e8eaf6;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .modal h2 { font-size: 18px; margin-bottom: 8px; color: #e8eaf6; display: flex; align-items: center; gap: 8px; }
   .modal p.modal-hint { font-size: 12px; color: #90a4ae; margin-bottom: 16px; }
-  .col-list {
-    overflow-y: auto; flex: 1;
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px;
-  }
-  .col-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 6px;
-    background: rgba(255,255,255,0.04); margin-bottom: 4px;
-    cursor: grab; user-select: none;
-  }
+  .col-list { overflow-y: auto; flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px; }
+  .col-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 6px; background: rgba(255,255,255,0.04); margin-bottom: 4px; cursor: grab; user-select: none; }
   .col-item:hover { background: rgba(255,255,255,0.1); }
   .col-item:active { cursor: grabbing; }
   .col-item.dragging { opacity: 0.4; }
   .col-item.drag-over { border-top: 2px solid #ba68c8; }
   .col-item .grip { color: #607d8b; font-size: 14px; }
-  .col-item input[type="checkbox"] {
-    width: 18px; height: 18px; cursor: pointer; accent-color: #ba68c8;
-  }
+  .col-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #ba68c8; }
   .col-item .col-name { flex: 1; font-size: 14px; }
   .col-item.locked { opacity: 0.5; cursor: not-allowed; }
   .col-item.locked .grip { color: #455a64; }
   .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
-
-  /* ★ 注意事項區塊 */
-  .notice {
-    margin-top: 24px; padding: 20px 24px;
-    background: rgba(0,0,0,0.18); border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    font-size: 13px; line-height: 1.7;
-    color: #90a4ae;
-  }
-  .notice h3 {
-    color: #e8eaf6; font-size: 15px; font-weight: 700;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-  .notice ul { list-style: none; padding-left: 0; }
-  .notice li { padding: 4px 0; padding-left: 20px; position: relative; }
-  .notice li::before {
-    content: "•"; position: absolute; left: 6px; color: #5e35b1; font-weight: bold;
-  }
-  .notice .notice-section { margin-bottom: 16px; }
-  .notice .notice-section:last-child { margin-bottom: 0; }
-  .notice strong { color: #b39ddb; }
-  .notice .warn { color: #ffb74d; }
-  .notice .ok { color: #81c784; }
 
   @media (max-width: 900px) {
     .summary-row { grid-template-columns: 1fr; }
@@ -241,6 +217,7 @@
     .summary-row .summary-right .summary-value { font-size: 18px; }
     .summary-row.divider .summary-right .summary-value,
     .summary-row.big-row .summary-right .summary-value { font-size: 22px; }
+    .chart-canvas-wrap { height: 240px; }
   }
 </style>
 </head>
@@ -268,6 +245,7 @@
     <button class="btn-success" id="btnAdd">➕ <span data-i18n="addRow">新增列</span></button>
     <button class="btn-secondary" id="btnColumns">⚙️ <span data-i18n="columns">欄位設定</span></button>
     <button class="btn-info" id="btnPdf">📄 <span data-i18n="pdf">匯出 PDF</span></button>
+    <button class="btn-excel" id="btnExcel">📊 <span data-i18n="excel">匯出 Excel</span></button>
     <button class="btn-warn" id="btnShare">🔗 <span data-i18n="share">分享連結</span></button>
     <button class="btn-danger" id="btnClear">🗑 <span data-i18n="clear">清除全部</span></button>
     <button class="btn-warn" id="btnForceUpdate" title="忽略快取強制更新所有股票" style="font-size:12px;padding:6px 10px;">⚡ <span data-i18n="forceUpdate">強制更新</span></button>
@@ -312,7 +290,26 @@
     </div>
   </div>
 
-  <!-- ★ 注意事項區塊 -->
+  <!-- ★ 折線圖區塊 -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title">📈 <span data-i18n="chartTitle">資產走勢</span></div>
+      <div class="chart-controls">
+        <button class="chart-range-btn active" data-range="7"  data-i18n="range7">7 天</button>
+        <button class="chart-range-btn" data-range="30" data-i18n="range30">30 天</button>
+        <button class="chart-range-btn" data-range="90" data-i18n="range90">90 天</button>
+        <button class="chart-range-btn" data-range="all" data-i18n="rangeAll">全部</button>
+      </div>
+    </div>
+    <div class="chart-canvas-wrap">
+      <canvas id="assetChart"></canvas>
+      <div class="chart-empty" id="chartEmpty" style="display:none;" data-i18n="chartEmpty">
+        尚無歷史資料。按「🔄 更新股價」成功後會自動記錄當日總資產，至少需要 2 天紀錄才能顯示折線圖。
+      </div>
+    </div>
+  </div>
+
+  <!-- 注意事項區塊 -->
   <div class="notice" id="noticeBox">
     <h3>📌 <span data-i18n="noticeTitle">使用須知</span></h3>
 
@@ -328,12 +325,28 @@
       </ul>
     </div>
 
+    <!-- ★ 圖表注意事項 -->
+    <div class="notice-section">
+      <strong data-i18n="noticeChartTitle">📈 資產走勢圖（重要！避免誤解）</strong>
+      <ul>
+        <li data-i18n="noticeChart1">折線圖會在每次按「🔄 更新股價」<strong>成功後自動記錄</strong>當日總淨值與開倉盈虧，同一天多次更新會以<strong>最後一次</strong>為準。</li>
+        <li data-i18n="noticeChart2"><span class="warn">⚠️ 不會回填歷史資料</span>：圖表只能呈現「您開始使用後」的紀錄，無法顯示加入此功能之前的資產走勢。</li>
+        <li data-i18n="noticeChart3"><span class="warn">⚠️ 不代表真實獲利曲線</span>：折線只反映「目前持股 × 當天股價」的計算結果，<strong>不會考慮歷史買賣紀錄</strong>。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。</li>
+        <li data-i18n="noticeChart4"><span class="warn">⚠️ 修改持股 / 成本 / 刪除列</span>：會直接影響後續所有計算，但<strong>過去已記錄的圖表點不會回溯修改</strong>。</li>
+        <li data-i18n="noticeChart5"><span class="warn">⚠️ 幣別影響</span>：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。</li>
+        <li data-i18n="noticeChart6">沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。</li>
+        <li data-i18n="noticeChart7">非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。</li>
+        <li data-i18n="noticeChart8">所有歷史紀錄存在您本機瀏覽器中，<span class="warn">換瀏覽器/換裝置/清快取會全部消失</span>，建議定期匯出 Excel 備份。</li>
+      </ul>
+    </div>
+
     <div class="notice-section">
       <strong data-i18n="noticeDataTitle">💾 資料儲存</strong>
       <ul>
         <li data-i18n="noticeData1">所有資料儲存在「您目前的瀏覽器」中（localStorage），<span class="warn">換瀏覽器/換裝置/清快取會消失</span>。</li>
-        <li data-i18n="noticeData2">想跨裝置使用 → 點 <strong>🔗 分享連結</strong> 把連結存入書籤，下次打開即可還原。</li>
-        <li data-i18n="noticeData3">分享連結含您的全部資料（股數、成本），<span class="warn">請勿貼到公開場合</span>。</li>
+        <li data-i18n="noticeData2">想跨裝置使用 → 點 <strong>🔗 分享連結</strong> 把連結存入書籤，下次打開即可還原（不含歷史紀錄）。</li>
+        <li data-i18n="noticeData3">想備份歷史紀錄 → 點 <strong>📊 匯出 Excel</strong>，存下檔案。</li>
+        <li data-i18n="noticeData4">分享連結含您的全部持股資料（股數、成本），<span class="warn">請勿貼到公開場合</span>。</li>
       </ul>
     </div>
 
@@ -356,6 +369,7 @@
         <li data-i18n="noticeUsage3">拖曳欄位標題可調整欄位左右順序。</li>
         <li data-i18n="noticeUsage4">成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。</li>
         <li data-i18n="noticeUsage5">可切換顯示幣別（TWD/USD），所有金額會自動換算。</li>
+        <li data-i18n="noticeUsage6">想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。</li>
       </ul>
     </div>
   </div>
@@ -376,7 +390,7 @@
 const I18N = {
   zh: {
     title: "📊 投資組合追蹤器",
-    update: "更新股價", addRow: "新增列", pdf: "匯出 PDF", share: "分享連結", clear: "清除全部",
+    update: "更新股價", addRow: "新增列", pdf: "匯出 PDF", excel: "匯出 Excel", share: "分享連結", clear: "清除全部",
     forceUpdate: "強制更新",
     columns: "欄位設定", columnSettings: "欄位設定",
     colModalHint: "拖曳調整順序，勾選顯示／取消勾選隱藏。「拖曳手把」「市場」「股票代號」「刪除」為固定欄位。",
@@ -395,6 +409,9 @@ const I18N = {
     partial: "部分成功：",
     skipped: "已跳過（快取仍有效）：",
     dragHint: "💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位",
+    chartTitle: "資產走勢", range7: "7 天", range30: "30 天", range90: "90 天", rangeAll: "全部",
+    chartEmpty: "尚無歷史資料。按「🔄 更新股價」成功後會自動記錄當日總資產，至少需要 2 天紀錄才能顯示折線圖。",
+    excelGenerating: "正在產生 Excel...", excelDone: "Excel 已下載！",
     noticeTitle: "使用須知",
     noticeUpdateTitle: "🔄 股價更新機制（智慧快取）",
     noticeUpdate1: "為節省流量，系統會自動判斷各市場「最近一次收盤時間」，已抓過且收盤價未更新的股票會跳過。",
@@ -403,10 +420,20 @@ const I18N = {
     noticeUpdate4: "盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。",
     noticeUpdate5: "想強制重抓所有股票（忽略快取），請點右上角的 ⚡ 強制更新 按鈕。",
     noticeUpdate6: "修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。",
+    noticeChartTitle: "📈 資產走勢圖（重要！避免誤解）",
+    noticeChart1: "折線圖會在每次按「🔄 更新股價」成功後自動記錄當日總淨值與開倉盈虧，同一天多次更新會以最後一次為準。",
+    noticeChart2: "⚠️ 不會回填歷史資料：圖表只能呈現「您開始使用後」的紀錄，無法顯示加入此功能之前的資產走勢。",
+    noticeChart3: "⚠️ 不代表真實獲利曲線：折線只反映「目前持股 × 當天股價」的計算結果，不會考慮歷史買賣紀錄。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。",
+    noticeChart4: "⚠️ 修改持股 / 成本 / 刪除列：會直接影響後續所有計算，但過去已記錄的圖表點不會回溯修改。",
+    noticeChart5: "⚠️ 幣別影響：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。",
+    noticeChart6: "沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。",
+    noticeChart7: "非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。",
+    noticeChart8: "所有歷史紀錄存在您本機瀏覽器中，換瀏覽器/換裝置/清快取會全部消失，建議定期匯出 Excel 備份。",
     noticeDataTitle: "💾 資料儲存",
     noticeData1: "所有資料儲存在「您目前的瀏覽器」中（localStorage），換瀏覽器/換裝置/清快取會消失。",
-    noticeData2: "想跨裝置使用 → 點 🔗 分享連結 把連結存入書籤，下次打開即可還原。",
-    noticeData3: "分享連結含您的全部資料（股數、成本），請勿貼到公開場合。",
+    noticeData2: "想跨裝置使用 → 點 🔗 分享連結 把連結存入書籤，下次打開即可還原（不含歷史紀錄）。",
+    noticeData3: "想備份歷史紀錄 → 點 📊 匯出 Excel，存下檔案。",
+    noticeData4: "分享連結含您的全部持股資料（股數、成本），請勿貼到公開場合。",
     noticeDataSourceTitle: "📈 資料來源與限制",
     noticeSource1: "股價資料來自 Yahoo Finance，非即時報價，可能有 15~20 分鐘延遲，僅供參考，不構成任何投資建議。",
     noticeSource2: "台股代號格式：4~6 位數字（如 2330、0050、00713），支援 ETF 含字母結尾（如 00981A）。",
@@ -418,11 +445,14 @@ const I18N = {
     noticeUsage2: "拖曳每列最左邊的 ⋮⋮ 可調整投資組合的顯示順序。",
     noticeUsage3: "拖曳欄位標題可調整欄位左右順序。",
     noticeUsage4: "成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。",
-    noticeUsage5: "可切換顯示幣別（TWD/USD），所有金額會自動換算。"
+    noticeUsage5: "可切換顯示幣別（TWD/USD），所有金額會自動換算。",
+    noticeUsage6: "想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。",
+    excelSheet1: "持股明細", excelSheet2: "歷史資產",
+    excelCol_date: "日期", excelCol_totalValue: "總淨值", excelCol_totalPnL: "開倉盈虧", excelCol_currency: "幣別"
   },
   en: {
     title: "📊 Portfolio Tracker",
-    update: "Update Prices", addRow: "Add Row", pdf: "Export PDF", share: "Share Link", clear: "Clear All",
+    update: "Update Prices", addRow: "Add Row", pdf: "Export PDF", excel: "Export Excel", share: "Share Link", clear: "Clear All",
     forceUpdate: "Force Update",
     columns: "Columns", columnSettings: "Column Settings",
     colModalHint: "Drag to reorder, check/uncheck to show/hide. Drag handle, Market, Symbol and Delete are fixed.",
@@ -441,6 +471,9 @@ const I18N = {
     partial: "Partial success: ",
     skipped: "Skipped (cache still valid): ",
     dragHint: "💡 Tip: Drag ⋮⋮ to reorder rows; drag column headers to reorder columns; click ⚙️ Columns to show/hide.",
+    chartTitle: "Asset Trend", range7: "7D", range30: "30D", range90: "90D", rangeAll: "All",
+    chartEmpty: "No history yet. After each successful Update, today's total assets will be recorded. At least 2 days of data are needed to draw the chart.",
+    excelGenerating: "Generating Excel...", excelDone: "Excel downloaded!",
     noticeTitle: "User Guide",
     noticeUpdateTitle: "🔄 Price Update Mechanism (Smart Cache)",
     noticeUpdate1: "To save bandwidth, the system auto-checks each market's last close time. Stocks already fetched after the latest close will be skipped.",
@@ -449,10 +482,20 @@ const I18N = {
     noticeUpdate4: "During market hours, updates fetch real-time prices. After close, only stocks missing today's close price are fetched.",
     noticeUpdate5: "To force-refresh all stocks (ignore cache), click the ⚡ Force Update button.",
     noticeUpdate6: "Editing shares or cost only triggers recalculation, no API call. Feel free to adjust.",
+    noticeChartTitle: "📈 Asset Chart (Important! Avoid Misreading)",
+    noticeChart1: "The chart auto-records today's total value and open P/L after each successful update. Same-day multiple updates will overwrite with the latest one.",
+    noticeChart2: "⚠️ No backfill: The chart only shows records since you started using this feature. Pre-existing history cannot be displayed.",
+    noticeChart3: "⚠️ NOT a true profit curve: The line only reflects 'current holdings × that day's price'. It does NOT account for buy/sell history. If you add new positions today, the chart will look like value 'suddenly spiked', but it's not real gain — it's just a new position added.",
+    noticeChart4: "⚠️ Editing shares/cost or deleting rows directly affects future calculations, but past recorded points are NOT retroactively modified.",
+    noticeChart5: "⚠️ Currency matters: The display currency at the moment of recording is saved. Switching currency later won't change old records. Stick with one currency for consistent tracking.",
+    noticeChart6: "Days with no holdings are skipped. Days with holdings but no cost still record Total Value (Open P/L will show 0).",
+    noticeChart7: "Weekends/holidays will also be recorded if you press Update, so the line may appear to 'extend horizontally' on non-trading days.",
+    noticeChart8: "All history is stored in your browser. Changing browser/device or clearing cache will wipe it all. Regularly export to Excel as backup.",
     noticeDataTitle: "💾 Data Storage",
     noticeData1: "All data is stored in your current browser (localStorage). Changing browser/device or clearing cache will lose data.",
-    noticeData2: "For cross-device use → click 🔗 Share Link, save it as a bookmark, and open it later to restore.",
-    noticeData3: "Share links contain all your data (shares, cost). Do not paste in public.",
+    noticeData2: "For cross-device use → click 🔗 Share Link, save it as a bookmark, and open it later to restore (history not included).",
+    noticeData3: "To backup history → click 📊 Export Excel and save the file.",
+    noticeData4: "Share links contain all your holdings data (shares, cost). Do not paste in public.",
     noticeDataSourceTitle: "📈 Data Source & Limitations",
     noticeSource1: "Prices from Yahoo Finance, NOT real-time (15-20 min delay possible). For reference only, not investment advice.",
     noticeSource2: "TW symbols: 4-6 digits (e.g., 2330, 0050, 00713), with optional letter suffix (e.g., 00981A).",
@@ -464,9 +507,13 @@ const I18N = {
     noticeUsage2: "Drag ⋮⋮ on each row's left to reorder your portfolio.",
     noticeUsage3: "Drag column headers to reorder columns horizontally.",
     noticeUsage4: "If cost is empty, Open P/L and ROI% will show '-'.",
-    noticeUsage5: "Switch display currency (TWD/USD) anytime, all amounts auto-convert."
+    noticeUsage5: "Switch display currency (TWD/USD) anytime, all amounts auto-convert.",
+    noticeUsage6: "For long-term tracking → press Update once daily after close to keep the chart complete.",
+    excelSheet1: "Holdings", excelSheet2: "Asset History",
+    excelCol_date: "Date", excelCol_totalValue: "Total Value", excelCol_totalPnL: "Open P/L", excelCol_currency: "Currency"
   }
 };
+
 const COLUMN_DEFS = {
   drag:        { key: "drag",        i18n: null,           width: "28px", fixed: true,  render: "drag" },
   market:      { key: "market",      i18n: "market",       width: "70px", fixed: true,  render: "market" },
@@ -484,32 +531,27 @@ const COLUMN_DEFS = {
   del:         { key: "del",         i18n: null,           width: "35px", fixed: true,  render: "del" }
 };
 const DEFAULT_COLUMNS = [
-  { key: "drag",         visible: true },
-  { key: "market",       visible: true },
-  { key: "symbol",       visible: true },
-  { key: "shares",       visible: true },
-  { key: "cost",         visible: true },
-  { key: "price",        visible: true },
-  { key: "prevClose",    visible: true },
-  { key: "changePrice",  visible: true },
-  { key: "changePct",    visible: true },
-  { key: "changeVal",    visible: true },
-  { key: "currentValue", visible: true },
-  { key: "openPnL",      visible: true },
-  { key: "roi",          visible: true },
-  { key: "del",          visible: true }
+  { key: "drag",         visible: true }, { key: "market", visible: true }, { key: "symbol", visible: true },
+  { key: "shares",       visible: true }, { key: "cost",   visible: true }, { key: "price",  visible: true },
+  { key: "prevClose",    visible: true }, { key: "changePrice", visible: true }, { key: "changePct", visible: true },
+  { key: "changeVal",    visible: true }, { key: "currentValue", visible: true }, { key: "openPnL", visible: true },
+  { key: "roi",          visible: true }, { key: "del",    visible: true }
 ];
+
 let state = {
   lang: "zh", currency: "TWD", colorMode: "tw",
   rows: [], fxRate: null,
-  columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS))
+  columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS)),
+  history: {}  // ★ 歷史紀錄：{ "2025-11-16": { totalValue, totalPnL, currency } }
 };
 const STORAGE_KEY = "portfolio_tracker_v1";
+let currentChartRange = "7";  // 預設 7 天
+let assetChartInstance = null;
 
 function saveState() {
   const toSave = {
     lang: state.lang, currency: state.currency, colorMode: state.colorMode,
-    rows: state.rows, columns: state.columns
+    rows: state.rows, columns: state.columns, history: state.history
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
 }
@@ -533,6 +575,7 @@ function loadState() {
     });
     state.columns = state.columns.filter(c => COLUMN_DEFS[c.key]);
   }
+  if (!state.history || typeof state.history !== "object") state.history = {};
 }
 function detectMarket(symbol) {
   if (!symbol) return "";
@@ -567,7 +610,7 @@ function makeRow(d) {
   return { market:d.market||"", symbol:d.symbol||"", shares:d.shares||"", cost:d.cost||"",
     price:d.price!=null?d.price:null, prevClose:d.prevClose!=null?d.prevClose:null,
     currency:d.currency||"", error:d.error||null,
-    lastFetchAt: d.lastFetchAt || null };  // ★ 新增：上次抓取時間戳
+    lastFetchAt: d.lastFetchAt || null };
 }
 function getVisibleColumns() {
   return state.columns.filter(c => c.visible).map(c => COLUMN_DEFS[c.key]).filter(Boolean);
@@ -603,66 +646,51 @@ function renderCell(col, row, idx, data) {
   const td = document.createElement("td");
   const t = I18N[state.lang];
   switch(col.render) {
-    case "drag":
-      td.innerHTML = '<span class="drag-handle" title="拖曳排序">⋮⋮</span>';
-      break;
+    case "drag": td.innerHTML = '<span class="drag-handle" title="拖曳排序">⋮⋮</span>'; break;
     case "market":
       td.innerHTML = '<select class="market-select" data-idx="'+idx+'" data-field="market">'+
         '<option value="tw"'+(row.market==="tw"?" selected":"")+'>'+t.tw+'</option>'+
-        '<option value="us"'+(row.market==="us"?" selected":"")+'>'+t.us+'</option></select>';
-      break;
+        '<option value="us"'+(row.market==="us"?" selected":"")+'>'+t.us+'</option></select>'; break;
     case "symbol":
-      td.innerHTML = '<input type="text" data-idx="'+idx+'" data-field="symbol" value="'+row.symbol+'" placeholder="2330 / AAPL" style="text-transform:uppercase">';
-      break;
+      td.innerHTML = '<input type="text" data-idx="'+idx+'" data-field="symbol" value="'+row.symbol+'" placeholder="2330 / AAPL" style="text-transform:uppercase">'; break;
     case "shares":
-      td.innerHTML = '<input type="number" class="num" data-idx="'+idx+'" data-field="shares" value="'+row.shares+'" placeholder="0" min="0" step="any">';
-      break;
+      td.innerHTML = '<input type="number" class="num" data-idx="'+idx+'" data-field="shares" value="'+row.shares+'" placeholder="0" min="0" step="any">'; break;
     case "cost":
       const rowCurrencyLabel = row.market === "us" ? "USD" : (row.market === "tw" ? "TWD" : "");
       td.innerHTML = '<div class="cost-wrap">'+
         '<input type="number" class="num" data-idx="'+idx+'" data-field="cost" value="'+row.cost+'" placeholder="-" min="0" step="any">'+
         '<span class="cost-currency" data-cost-currency="'+idx+'">'+rowCurrencyLabel+'</span>'+
-        '</div>';
-      break;
+        '</div>'; break;
     case "price":
       td.className = "col-output";
       if (row.error) {
         td.innerHTML = '<span style="color:#ef5350;font-size:11px" title="'+row.error+'">⚠ '+row.error.slice(0,18)+'</span>';
       } else {
         td.textContent = data.price!==null ? fmtNum(data.price,2)+" "+data.rowCurrency : "-";
-      }
-      break;
+      } break;
     case "prevClose":
       td.className = "col-output flat";
-      td.textContent = data.prev!==null && !isNaN(data.prev) ? fmtNum(data.prev,2) : "-";
-      break;
+      td.textContent = data.prev!==null && !isNaN(data.prev) ? fmtNum(data.prev,2) : "-"; break;
     case "changePrice":
       td.className = "col-output " + colorClass(data.changePrice);
-      td.textContent = fmtSigned(data.changePrice, 2);
-      break;
+      td.textContent = fmtSigned(data.changePrice, 2); break;
     case "changePct":
       td.className = "col-output " + colorClass(data.dayPct);
-      td.textContent = fmtPct(data.dayPct);
-      break;
+      td.textContent = fmtPct(data.dayPct); break;
     case "changeVal":
       td.className = "col-output " + colorClass(data.dispDayPnL);
-      td.textContent = fmtSigned(data.dispDayPnL,0);
-      break;
+      td.textContent = fmtSigned(data.dispDayPnL,0); break;
     case "currentValue":
       td.className = "col-output";
-      td.textContent = data.dispCurVal!==null?fmtNum(data.dispCurVal,0):"-";
-      break;
+      td.textContent = data.dispCurVal!==null?fmtNum(data.dispCurVal,0):"-"; break;
     case "openPnL":
       td.className = "col-output " + colorClass(data.dispOpenPnL);
-      td.textContent = data.dispOpenPnL!==null?fmtSigned(data.dispOpenPnL,0):"-";
-      break;
+      td.textContent = data.dispOpenPnL!==null?fmtSigned(data.dispOpenPnL,0):"-"; break;
     case "roi":
       td.className = "col-output " + colorClass(data.roi);
-      td.textContent = fmtPct(data.roi);
-      break;
+      td.textContent = fmtPct(data.roi); break;
     case "del":
-      td.innerHTML = '<button class="del-btn" data-idx="'+idx+'">✕</button>';
-      break;
+      td.innerHTML = '<button class="del-btn" data-idx="'+idx+'">✕</button>'; break;
   }
   return td;
 }
@@ -686,12 +714,8 @@ function renderTable() {
         th.classList.add("draggable-col");
         th.setAttribute("draggable", "true");
         th.innerHTML = '<span class="col-grip">⋮⋮</span>' + t[col.i18n];
-      } else {
-        th.textContent = t[col.i18n];
-      }
-    } else {
-      th.textContent = col.key === "del" ? "✕" : "";
-    }
+      } else { th.textContent = t[col.i18n]; }
+    } else { th.textContent = col.key === "del" ? "✕" : ""; }
     thead.appendChild(th);
   });
   const tbody = document.getElementById("tableBody");
@@ -702,9 +726,7 @@ function renderTable() {
     tr.setAttribute("draggable", "true");
     tr.setAttribute("data-idx", idx);
     const data = computeRowData(row);
-    cols.forEach(col => {
-      tr.appendChild(renderCell(col, row, idx, data));
-    });
+    cols.forEach(col => { tr.appendChild(renderCell(col, row, idx, data)); });
     tbody.appendChild(tr);
   });
   tbody.querySelectorAll("input, select").forEach(el => {
@@ -750,9 +772,7 @@ function bindRowDragEvents(tbody) {
       tbody.querySelectorAll(".drag-over").forEach(r => r.classList.remove("drag-over"));
       tr.classList.add("drag-over");
     });
-    tr.addEventListener("dragleave", function() {
-      tr.classList.remove("drag-over");
-    });
+    tr.addEventListener("dragleave", function() { tr.classList.remove("drag-over"); });
     tr.addEventListener("drop", function(e) {
       if (dragSrcIdx === null) return;
       e.preventDefault();
@@ -786,9 +806,7 @@ function bindColumnDragEvents(thead) {
       thead.querySelectorAll(".col-drag-over").forEach(t => t.classList.remove("col-drag-over"));
       th.classList.add("col-drag-over");
     });
-    th.addEventListener("dragleave", function() {
-      th.classList.remove("col-drag-over");
-    });
+    th.addEventListener("dragleave", function() { th.classList.remove("col-drag-over"); });
     th.addEventListener("drop", function(e) {
       if (!dragColKey) return;
       e.preventDefault();
@@ -807,13 +825,8 @@ function moveColumn(srcKey, targetKey) {
   if (newTargetIdx < 0) state.columns.push(moved);
   else state.columns.splice(newTargetIdx, 0, moved);
 }
-function openColModal() {
-  renderColList();
-  document.getElementById("colModal").classList.add("show");
-}
-function closeColModal() {
-  document.getElementById("colModal").classList.remove("show");
-}
+function openColModal() { renderColList(); document.getElementById("colModal").classList.add("show"); }
+function closeColModal() { document.getElementById("colModal").classList.remove("show"); }
 function renderColList() {
   const t = I18N[state.lang];
   const list = document.getElementById("colList");
@@ -837,10 +850,7 @@ function renderColList() {
     cb.addEventListener("change", function() {
       const key = cb.getAttribute("data-colkey");
       const col = state.columns.find(c => c.key === key);
-      if (col) {
-        col.visible = cb.checked;
-        saveState(); renderTable();
-      }
+      if (col) { col.visible = cb.checked; saveState(); renderTable(); }
     });
   });
   let modalDragKey = null;
@@ -848,8 +858,7 @@ function renderColList() {
     if (item.classList.contains("locked")) return;
     item.addEventListener("dragstart", function(e) {
       modalDragKey = item.getAttribute("data-colkey");
-      item.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
+      item.classList.add("dragging"); e.dataTransfer.effectAllowed = "move";
     });
     item.addEventListener("dragend", function() {
       item.classList.remove("dragging");
@@ -869,17 +878,13 @@ function renderColList() {
       const targetKey = item.getAttribute("data-colkey");
       if (modalDragKey === targetKey) return;
       moveColumn(modalDragKey, targetKey);
-      saveState();
-      renderColList();
-      renderTable();
+      saveState(); renderColList(); renderTable();
     });
   });
 }
 function resetColumns() {
   state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
-  saveState();
-  renderColList();
-  renderTable();
+  saveState(); renderColList(); renderTable();
 }
 function onCellChange(e) {
   const idx = parseInt(e.target.dataset.idx);
@@ -907,9 +912,7 @@ function onCellChange(e) {
     state.rows[idx][field] = v;
   }
   scheduleSave();
-  // ★ 修改股數/成本只觸發重算，不抓 API
   if (field==="shares" || field==="cost") {
-    // 即時重算該列的衍生欄位 + 總計
     updateRowOutputUI(idx);
     renderSummary();
   }
@@ -930,7 +933,6 @@ function updateRowMarketUI(idx) {
     costLabel.textContent = m === "us" ? "USD" : (m === "tw" ? "TWD" : "");
   }
 }
-// ★ 即時更新該列的輸出欄位（股數/成本變化時）
 function updateRowOutputUI(idx) {
   const tbody = document.getElementById("tableBody");
   if (!tbody) return;
@@ -943,7 +945,6 @@ function updateRowOutputUI(idx) {
   cols.forEach((col, i) => {
     const td = tds[i];
     if (!td) return;
-    // 只更新輸出欄位 (跳過輸入欄)
     if (["price","prevClose","changePrice","changePct","changeVal","currentValue","openPnL","roi"].indexOf(col.render) >= 0) {
       const newTd = renderCell(col, row, idx, data);
       td.className = newTd.className;
@@ -951,15 +952,17 @@ function updateRowOutputUI(idx) {
     }
   });
 }
-function renderSummary() {
+
+// ★ 計算當前總資產（給 summary + history 用）
+function calcTotals() {
   let totalCur=0, totalDayPnL=0, totalPrevValue=0, totalCost=0;
-  let hasPrice=false, hasCost=false;
+  let hasPrice=false, hasCost=false, hasShares=false;
   state.rows.forEach(row => {
     const shares = parseFloat(row.shares)||0;
     const cost = parseFloat(row.cost)||0;
     const price = row.price, prev = row.prevClose;
     if (!shares || price===null || isNaN(price)) return;
-    hasPrice = true;
+    hasPrice = true; hasShares = true;
     const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
     totalCur += convertCurrency(price*shares, rowCurrency, state.currency);
     if (prev && prev>0) {
@@ -968,22 +971,27 @@ function renderSummary() {
     }
     if (cost>0) { hasCost = true; totalCost += convertCurrency(cost*shares, rowCurrency, state.currency); }
   });
+  return { totalCur, totalDayPnL, totalPrevValue, totalCost, hasPrice, hasCost, hasShares };
+}
+
+function renderSummary() {
+  const r = calcTotals();
   document.getElementById("todayDate").textContent = new Date().toISOString().slice(0,10);
   const dayPctEl=document.getElementById("dayPct"), dayPnLEl=document.getElementById("dayPnL");
   const totValEl=document.getElementById("totalValue"), totPnLEl=document.getElementById("totalPnL");
   const fxEl=document.getElementById("fxRate");
-  if (hasPrice && totalPrevValue>0) {
-    const pct = totalDayPnL/totalPrevValue*100;
+  if (r.hasPrice && r.totalPrevValue>0) {
+    const pct = r.totalDayPnL/r.totalPrevValue*100;
     dayPctEl.textContent = fmtPct(pct); dayPctEl.className = "summary-value "+colorClass(pct);
-    dayPnLEl.textContent = fmtSigned(totalDayPnL,0)+" "+state.currency; dayPnLEl.className = "summary-value "+colorClass(totalDayPnL);
+    dayPnLEl.textContent = fmtSigned(r.totalDayPnL,0)+" "+state.currency; dayPnLEl.className = "summary-value "+colorClass(r.totalDayPnL);
   } else {
     dayPctEl.textContent="-"; dayPnLEl.textContent="-";
     dayPctEl.className="summary-value flat"; dayPnLEl.className="summary-value flat";
   }
-  totValEl.textContent = hasPrice?fmtNum(totalCur,0)+" "+state.currency:"-";
-  if (hasCost && hasPrice) {
-    const openPnL = totalCur - totalCost;
-    const openPct = totalCost>0?openPnL/totalCost*100:0;
+  totValEl.textContent = r.hasPrice?fmtNum(r.totalCur,0)+" "+state.currency:"-";
+  if (r.hasCost && r.hasPrice) {
+    const openPnL = r.totalCur - r.totalCost;
+    const openPct = r.totalCost>0?openPnL/r.totalCost*100:0;
     totPnLEl.textContent = fmtSigned(openPnL,0)+" "+state.currency+" ("+fmtPct(openPct)+")";
     totPnLEl.className = "summary-value "+colorClass(openPnL);
   } else {
@@ -991,6 +999,26 @@ function renderSummary() {
   }
   fxEl.textContent = state.fxRate?state.fxRate.toFixed(4):"-";
 }
+
+// ★ 記錄今日資產到 history
+function recordTodayAssets() {
+  const r = calcTotals();
+  // 沒持股不記錄
+  if (!r.hasShares || r.totalCur <= 0) {
+    console.log("[History] no holdings, skip recording");
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);  // YYYY-MM-DD
+  const openPnL = r.hasCost ? (r.totalCur - r.totalCost) : 0;
+  state.history[today] = {
+    totalValue: Math.round(r.totalCur * 100) / 100,
+    totalPnL: Math.round(openPnL * 100) / 100,
+    currency: state.currency
+  };
+  console.log("[History] Recorded " + today + ":", state.history[today]);
+  saveState();
+}
+
 function convertCurrency(val, from, to) {
   if (from===to) return val;
   if (!state.fxRate) return val;
@@ -1010,13 +1038,9 @@ async function fetchFxRate() {
   state.fxRate = state.fxRate || 32.0;
 }
 
-/* ===================== ★ 市場收盤時間判斷 ===================== */
-
-// 取得指定時區的 Date 物件（用台北時區為基準）
+// 市場收盤時間判斷
 function getTaipeiTime() {
-  // 將現在時間換成台北時間的元件
   const now = new Date();
-  // 用 Intl 拿到台北各時間元件
   const fmt = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Taipei",
     year: "numeric", month: "2-digit", day: "2-digit",
@@ -1032,79 +1056,38 @@ function getTaipeiTime() {
     hour: parseInt(parts.hour === "24" ? "0" : parts.hour),
     minute: parseInt(parts.minute),
     weekday: new Date(parts.year + "-" + parts.month + "-" + parts.day + "T12:00:00").getDay()
-    // 0=日, 1=一, ..., 6=六
   };
 }
-
-// 取得 N 天前的日期 (台北)
 function shiftDate(dateObj, days) {
   const d = new Date(dateObj.year, dateObj.month-1, dateObj.day);
   d.setDate(d.getDate() + days);
-  return {
-    year: d.getFullYear(),
-    month: d.getMonth()+1,
-    day: d.getDate(),
-    weekday: d.getDay()
-  };
+  return { year: d.getFullYear(), month: d.getMonth()+1, day: d.getDate(), weekday: d.getDay() };
 }
-
-// 把 (y,m,d,h,min) 視為台北時間，轉成 UTC timestamp (ms)
 function taipeiToTimestamp(y, m, d, h, min) {
-  // 台北是 UTC+8
   const utcMs = Date.UTC(y, m-1, d, h, min, 0);
   return utcMs - 8 * 3600 * 1000;
 }
-
-// 取得「最近一次台股收盤時間」的 timestamp
-// 規則：交易日 13:30 (台北)。若今天非交易日或還沒到 13:30，則往前找最近一個交易日的 13:30
 function getLastCloseTW() {
   const t = getTaipeiTime();
-  // 嘗試今天
   let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
-  // 今天若是平日且已過 13:30
-  const todayClosed = (t.weekday >= 1 && t.weekday <= 5) &&
-                      (t.hour > 13 || (t.hour === 13 && t.minute >= 30));
-  if (todayClosed) {
-    return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
-  }
-  // 否則往前找最近的交易日
+  const todayClosed = (t.weekday >= 1 && t.weekday <= 5) && (t.hour > 13 || (t.hour === 13 && t.minute >= 30));
+  if (todayClosed) return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
   for (let i=1; i<=7; i++) {
     candidate = shiftDate(candidate, -1);
     if (candidate.weekday >= 1 && candidate.weekday <= 5) {
       return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
     }
   }
-  return Date.now(); // 不應該發生
+  return Date.now();
 }
-
-// 取得「最近一次美股收盤時間」的 timestamp
-// 規則：美股收盤 04:00 (台北，UTC+8，等於 EST 15:00) ~ 05:00 (台北，等於 EDT 16:00)
-// 為簡化，採用「台北 05:00 = 美股收盤完成」這個保守值，意即收盤後一定要過台北 05:00 才算今日定案
-// 收盤對應的「日期」是美東當日（如美股 11/15 收盤 = 台北 11/16 凌晨 05:00）
 function getLastCloseUS() {
   const t = getTaipeiTime();
-  // 因為美股是「美東日期」收盤，我們以「台北今天」為基準判斷
-  // 台北現在的星期幾、時間
-  // 美股收盤對應台北：週二 ~ 週六 早上 05:00
-  // 例：週一美股 = 台北週二 05:00 收盤
-  //    週五美股 = 台北週六 05:00 收盤
-
-  // 候選：今天台北 05:00
   let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
   const todayClosed = (t.hour > 5 || (t.hour === 5 && t.minute > 0));
-
-  // 檢查 candidate 是否為「美股收盤後的下一個台北日期」
-  // 美股交易日：週一~週五（美東）
-  // 對應台北：週二~週六凌晨
-  function isValidCloseDayTW(weekday) {
-    // 週二=2 ~ 週六=6 (台北)
-    return weekday >= 2 && weekday <= 6;
-  }
-
+  function isValidCloseDayTW(weekday) { return weekday >= 2 && weekday <= 6; }
   if (todayClosed && isValidCloseDayTW(candidate.weekday)) {
     return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 5, 0);
   }
-  // 往前找
   for (let i=1; i<=10; i++) {
     candidate = shiftDate(candidate, -1);
     if (isValidCloseDayTW(candidate.weekday)) {
@@ -1113,19 +1096,14 @@ function getLastCloseUS() {
   }
   return Date.now();
 }
-
-// 判斷一支股票是否需要重抓
 function shouldFetch(row, forceUpdate) {
   if (forceUpdate) return true;
-  if (!row.price || !row.lastFetchAt) return true;  // 沒抓過
+  if (!row.price || !row.lastFetchAt) return true;
   const lastClose = row.market === "tw" ? getLastCloseTW() : getLastCloseUS();
-  // 上次抓取時間 < 該市場最近一次收盤時間 → 要重抓
   if (row.lastFetchAt < lastClose) return true;
-  // 否則跳過（快取仍有效）
   return false;
 }
 
-/* ===================== Price APIs ===================== */
 async function fetchWithTimeout(url, opts, timeout) {
   timeout = timeout || 15000;
   const controller = new AbortController();
@@ -1146,9 +1124,7 @@ const PROXIES = [
 let lastGoodProxyIdx = 0;
 async function fetchViaProxy(url, asJson) {
   const order = [];
-  for (let i=0; i<PROXIES.length; i++) {
-    order.push((lastGoodProxyIdx + i) % PROXIES.length);
-  }
+  for (let i=0; i<PROXIES.length; i++) order.push((lastGoodProxyIdx + i) % PROXIES.length);
   let lastErr = null;
   for (const idx of order) {
     const proxy = PROXIES[idx];
@@ -1157,18 +1133,10 @@ async function fetchViaProxy(url, asJson) {
       const res = await fetchWithTimeout(purl, {
         headers: { "Accept": "application/json, text/plain, " + "*" + "/" + "*" }
       }, 12000);
-      if (!res.ok) {
-        lastErr = new Error("HTTP " + res.status);
-        console.warn("  [" + proxy.name + "] HTTP " + res.status);
-        continue;
-      }
+      if (!res.ok) { lastErr = new Error("HTTP " + res.status); console.warn("  [" + proxy.name + "] HTTP " + res.status); continue; }
       const text = await res.text();
       if (!text || text.length < 5) { lastErr = new Error("Empty"); continue; }
-      if (text.trim().toLowerCase().startsWith("<")) {
-        lastErr = new Error("HTML response");
-        console.warn("  [" + proxy.name + "] got HTML, skip");
-        continue;
-      }
+      if (text.trim().toLowerCase().startsWith("<")) { lastErr = new Error("HTML response"); console.warn("  [" + proxy.name + "] got HTML, skip"); continue; }
       if (asJson) {
         try {
           const json = JSON.parse(text);
@@ -1177,12 +1145,8 @@ async function fetchViaProxy(url, asJson) {
           return json;
         } catch(e) { lastErr = new Error("Bad JSON"); continue; }
       }
-      lastGoodProxyIdx = idx;
-      return text;
-    } catch(e) {
-      lastErr = e;
-      console.warn("  [" + proxy.name + "] " + e.message);
-    }
+      lastGoodProxyIdx = idx; return text;
+    } catch(e) { lastErr = e; console.warn("  [" + proxy.name + "] " + e.message); }
   }
   throw lastErr || new Error("All proxies failed");
 }
@@ -1190,12 +1154,9 @@ function parseYahooResult(result) {
   const meta = result.meta;
   const quote = result.indicators && result.indicators.quote && result.indicators.quote[0];
   const closes = quote && quote.close ? quote.close : [];
-  const timestamps = result.timestamp || [];
   const pairs = [];
   for (let i=0; i<closes.length; i++) {
-    if (closes[i] != null && !isNaN(closes[i])) {
-      pairs.push({ ts: timestamps[i], close: closes[i] });
-    }
+    if (closes[i] != null && !isNaN(closes[i])) pairs.push({ close: closes[i] });
   }
   let price = meta.regularMarketPrice;
   if (price == null || isNaN(price) || price <= 0) {
@@ -1220,21 +1181,19 @@ async function fetchTWPrice(symbol) {
     const ticker = candidates[i];
     const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + ticker + "?interval=1d&range=10d";
     try {
-      console.log("[TW] Trying Yahoo " + ticker);
       const json = await fetchViaProxy(url, true);
       const result = json && json.chart && json.chart.result && json.chart.result[0];
       if (result) {
         const data = parseYahooResult(result);
         if (data.price && data.price > 0) {
-          console.log("[TW] ✓ Yahoo " + ticker + " price=" + data.price + " prev=" + data.prevClose);
+          console.log("[TW] ✓ " + ticker + " price=" + data.price);
           return data;
         }
       }
       lastErr = new Error("Yahoo no data " + ticker);
-    } catch(e) { lastErr = e; console.warn("[TW] Yahoo " + ticker + " failed: " + e.message); }
+    } catch(e) { lastErr = e; }
   }
   try {
-    console.log("[TW] Trying TWSE OpenAPI " + symbol);
     const url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL";
     const json = await fetchViaProxy(url, true);
     if (Array.isArray(json)) {
@@ -1243,10 +1202,7 @@ async function fetchTWPrice(symbol) {
         const price = parseFloat(found.ClosingPrice);
         const change = parseFloat(found.Change);
         const prevClose = price - change;
-        if (price > 0) {
-          console.log("[TW] ✓ TWSE " + symbol + " price=" + price + " prev=" + prevClose);
-          return { price: price, prevClose: prevClose };
-        }
+        if (price > 0) return { price: price, prevClose: prevClose };
       }
     }
   } catch(e) { console.warn("[TW] TWSE OpenAPI failed: " + e.message); }
@@ -1255,13 +1211,12 @@ async function fetchTWPrice(symbol) {
 async function fetchUSPrice(symbol) {
   symbol = symbol.trim().toUpperCase();
   const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=10d";
-  console.log("[US] Trying " + symbol);
   const json = await fetchViaProxy(url, true);
   const result = json && json.chart && json.chart.result && json.chart.result[0];
   if (!result) throw new Error("No data " + symbol);
   const data = parseYahooResult(result);
   if (!data.price || data.price <= 0) throw new Error("No valid price " + symbol);
-  console.log("[US] ✓ " + symbol + " price=" + data.price + " prev=" + data.prevClose);
+  console.log("[US] ✓ " + symbol + " price=" + data.price);
   return data;
 }
 async function fetchPrice(market, symbol) {
@@ -1275,19 +1230,13 @@ async function fetchPriceWithRetry(market, symbol, retries) {
     try { return await fetchPrice(market, symbol); }
     catch(e) {
       lastErr = e;
-      if (attempt < retries) {
-        console.log("[Retry] " + symbol + " attempt " + (attempt+2) + "/" + (retries+1));
-        await new Promise(r => setTimeout(r, 800));
-      }
+      if (attempt < retries) await new Promise(r => setTimeout(r, 800));
     }
   }
   throw lastErr;
 }
-function countValidRows() {
-  return state.rows.filter(r => r.symbol && r.market).length;
-}
+function countValidRows() { return state.rows.filter(r => r.symbol && r.market).length; }
 
-// ★ 主更新函式：加入 forceUpdate 參數
 async function updateAllPrices(forceUpdate) {
   forceUpdate = forceUpdate || false;
   showStatus(I18N[state.lang].fetching, "info", true);
@@ -1297,10 +1246,8 @@ async function updateAllPrices(forceUpdate) {
   for (let idx = 0; idx < state.rows.length; idx++) {
     const row = state.rows[idx];
     if (!row.symbol || !row.market) continue;
-    // ★ 智慧快取判斷
     if (!shouldFetch(row, forceUpdate)) {
       skipCount++;
-      console.log("[Skip] " + row.symbol + " (cached, last fetch: " + new Date(row.lastFetchAt).toLocaleString() + ")");
       showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
       continue;
     }
@@ -1311,7 +1258,7 @@ async function updateAllPrices(forceUpdate) {
         state.rows[idx].prevClose = data.prevClose;
         state.rows[idx].currency = row.market==="us"?"USD":"TWD";
         state.rows[idx].error = null;
-        state.rows[idx].lastFetchAt = Date.now();  // ★ 記錄抓取時間
+        state.rows[idx].lastFetchAt = Date.now();
         okCount++;
       } else { state.rows[idx].error = "No data"; failCount++; }
     } catch(e) {
@@ -1322,8 +1269,13 @@ async function updateAllPrices(forceUpdate) {
     showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
     await new Promise(r => setTimeout(r, 200));
   }
-  saveState(); renderTable();
-  // ★ 顯示包含「跳過」的結果
+  saveState();
+  // ★ 記錄今日資產 + 更新圖表
+  if (okCount > 0 || skipCount > 0) {
+    recordTodayAssets();
+    renderChart();
+  }
+  renderTable();
   const parts = [];
   if (okCount > 0) parts.push(okCount + " ✓");
   if (skipCount > 0) parts.push(skipCount + " 📦");
@@ -1332,23 +1284,333 @@ async function updateAllPrices(forceUpdate) {
   if (failCount === 0 && (okCount + skipCount) > 0) {
     if (skipCount > 0 && okCount === 0) {
       showStatus("📦 " + I18N[state.lang].skipped + skipCount + "（全部使用快取，未消耗 API）", "success");
-    } else {
-      showStatus(I18N[state.lang].done2 + " " + msg, "success");
-    }
+    } else { showStatus(I18N[state.lang].done2 + " " + msg, "success"); }
   } else if (failCount > 0 && (okCount + skipCount) > 0) {
     showStatus(I18N[state.lang].partial + msg, "info");
   } else if (failCount > 0) {
-    showStatus(I18N[state.lang].err + failCount + " 檔失敗，請按 F12 看 Console", "error");
-  } else {
-    showStatus("請先輸入股票代號", "info");
-  }
+    showStatus(I18N[state.lang].err + failCount + " 檔失敗", "error");
+  } else { showStatus("請先輸入股票代號", "info"); }
 }
+
 function showStatus(msg, type, loading) {
   const el = document.getElementById("status");
   el.className = "status show " + (type||"info");
   el.innerHTML = (loading?'<span class="spinner"></span>':"") + msg;
   if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 6000);
 }
+
+/* ===================== ★ 折線圖 ===================== */
+function renderChart() {
+  const dates = Object.keys(state.history).sort();
+  const canvas = document.getElementById("assetChart");
+  const emptyMsg = document.getElementById("chartEmpty");
+
+  if (dates.length < 2) {
+    canvas.style.display = "none";
+    emptyMsg.style.display = "block";
+    if (assetChartInstance) { assetChartInstance.destroy(); assetChartInstance = null; }
+    return;
+  }
+  canvas.style.display = "block";
+  emptyMsg.style.display = "none";
+
+  // 篩選範圍
+  let filteredDates = dates;
+  if (currentChartRange !== "all") {
+    const days = parseInt(currentChartRange);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutoffStr = cutoff.toISOString().slice(0,10);
+    filteredDates = dates.filter(d => d >= cutoffStr);
+  }
+  if (filteredDates.length < 2) {
+    canvas.style.display = "none";
+    emptyMsg.style.display = "block";
+    emptyMsg.textContent = state.lang === "zh"
+      ? "此時間範圍內紀錄不足 2 筆，請選擇較長的時間範圍。"
+      : "Less than 2 records in this range. Please select a longer range.";
+    if (assetChartInstance) { assetChartInstance.destroy(); assetChartInstance = null; }
+    return;
+  }
+
+  const labels = filteredDates;
+  const totalValueData = filteredDates.map(d => state.history[d].totalValue);
+  const totalPnLData = filteredDates.map(d => state.history[d].totalPnL);
+
+  if (assetChartInstance) assetChartInstance.destroy();
+  const ctx = canvas.getContext("2d");
+  assetChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: state.lang === "zh" ? "總淨值" : "Total Value",
+          data: totalValueData,
+          borderColor: "#7e57c2",
+          backgroundColor: "rgba(126,87,194,0.15)",
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          yAxisID: "y"
+        },
+        {
+          label: state.lang === "zh" ? "開倉盈虧" : "Open P/L",
+          data: totalPnLData,
+          borderColor: "#ef5350",
+          backgroundColor: "rgba(239,83,80,0.0)",
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          borderDash: [6,3],
+          yAxisID: "y1"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { labels: { color: "#e8eaf6", font: { size: 13, weight: "600" } } },
+        tooltip: {
+          backgroundColor: "rgba(20,24,50,0.95)",
+          borderColor: "rgba(186,104,200,0.5)",
+          borderWidth: 1,
+          titleColor: "#e8eaf6",
+          bodyColor: "#e8eaf6",
+          callbacks: {
+            label: function(ctx) {
+              const v = ctx.parsed.y;
+              const cur = state.history[ctx.label] ? state.history[ctx.label].currency : state.currency;
+              return ctx.dataset.label + ": " + Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}) + " " + cur;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: "#90a4ae", maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+          grid: { color: "rgba(255,255,255,0.05)" }
+        },
+        y: {
+          position: "left",
+          ticks: {
+            color: "#90a4ae",
+            callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
+          },
+          grid: { color: "rgba(255,255,255,0.05)" },
+          title: { display: true, text: state.lang === "zh" ? "總淨值" : "Total Value", color: "#7e57c2" }
+        },
+        y1: {
+          position: "right",
+          ticks: {
+            color: "#90a4ae",
+            callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
+          },
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: state.lang === "zh" ? "開倉盈虧" : "Open P/L", color: "#ef5350" }
+        }
+      }
+    }
+  });
+}
+
+function bindChartControls() {
+  document.querySelectorAll(".chart-range-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      currentChartRange = btn.getAttribute("data-range");
+      document.querySelectorAll(".chart-range-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderChart();
+    });
+  });
+}
+
+/* ===================== ★ Excel 匯出 ===================== */
+function exportExcel() {
+  showStatus(I18N[state.lang].excelGenerating, "info", true);
+  try {
+    const t = I18N[state.lang];
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: 持股明細
+    const headers = [
+      t.market, t.symbol, t.shares, t.cost + "(" + state.currency + ")",
+      t.price, t.prevClose, t.changePrice, t.changePct,
+      t.changeVal, t.currentValue, t.openPnL, t.roi
+    ];
+    const dataRows = [];
+    state.rows.forEach(row => {
+      if (!row.symbol || !row.market) return;
+      const d = computeRowData(row);
+      const marketLabel = row.market === "tw" ? t.tw : t.us;
+      const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
+      const costInRowCcy = parseFloat(row.cost) || null;
+      // 統一以 row 原始幣別呈現
+      dataRows.push([
+        marketLabel,
+        row.symbol,
+        parseFloat(row.shares) || 0,
+        costInRowCcy,
+        d.price,
+        d.prev,
+        d.changePrice,
+        d.dayPct != null ? d.dayPct / 100 : null,
+        d.dispDayPnL,
+        d.dispCurVal,
+        d.dispOpenPnL,
+        d.roi != null ? d.roi / 100 : null
+      ]);
+    });
+
+    const ws1Data = [headers].concat(dataRows);
+    const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
+
+    // 欄寬
+    ws1["!cols"] = [
+      {wch:8},{wch:12},{wch:12},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},
+      {wch:14},{wch:16},{wch:14},{wch:10}
+    ];
+
+    // 表頭樣式 + 數字格式
+    const headerCells = ["A1","B1","C1","D1","E1","F1","G1","H1","I1","J1","K1","L1"];
+    headerCells.forEach(addr => {
+      if (!ws1[addr]) return;
+      ws1[addr].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+        fill: { fgColor: { rgb: "2D1B4E" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+          top: { style: "thin", color: { rgb: "FFFFFF" } },
+          bottom: { style: "thin", color: { rgb: "FFFFFF" } }
+        }
+      };
+    });
+
+    // 內容格式：數字千分位 + 漲跌色
+    const numFmt = "#,##0.00";
+    const intFmt = "#,##0";
+    const pctFmt = "+0.00%;-0.00%;0.00%";
+    const signedFmt = '+#,##0;-#,##0;0';
+    for (let r = 1; r < ws1Data.length; r++) {
+      const rowNum = r + 1;
+      // C: shares (整數或小數)
+      const cellC = "C" + rowNum; if (ws1[cellC]) ws1[cellC].z = numFmt;
+      // D: cost
+      const cellD = "D" + rowNum; if (ws1[cellD]) ws1[cellD].z = numFmt;
+      // E: 最新價
+      const cellE = "E" + rowNum; if (ws1[cellE]) ws1[cellE].z = numFmt;
+      // F: 昨收
+      const cellF = "F" + rowNum; if (ws1[cellF]) ws1[cellF].z = numFmt;
+      // G: 漲跌價
+      const cellG = "G" + rowNum;
+      if (ws1[cellG]) {
+        ws1[cellG].z = signedFmt;
+        const v = ws1[cellG].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws1[cellG].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
+        }
+      }
+      // H: 漲跌%
+      const cellH = "H" + rowNum;
+      if (ws1[cellH]) {
+        ws1[cellH].z = pctFmt;
+        const v = ws1[cellH].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws1[cellH].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
+        }
+      }
+      // I: 單日盈虧
+      const cellI = "I" + rowNum;
+      if (ws1[cellI]) {
+        ws1[cellI].z = signedFmt;
+        const v = ws1[cellI].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws1[cellI].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
+        }
+      }
+      // J: 目前淨值
+      const cellJ = "J" + rowNum; if (ws1[cellJ]) ws1[cellJ].z = intFmt;
+      // K: 開倉盈虧
+      const cellK = "K" + rowNum;
+      if (ws1[cellK]) {
+        ws1[cellK].z = signedFmt;
+        const v = ws1[cellK].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws1[cellK].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
+        }
+      }
+      // L: 獲利率%
+      const cellL = "L" + rowNum;
+      if (ws1[cellL]) {
+        ws1[cellL].z = pctFmt;
+        const v = ws1[cellL].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws1[cellL].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
+        }
+      }
+    }
+
+    // 凍結首列
+    ws1["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+    XLSX.utils.book_append_sheet(wb, ws1, t.excelSheet1);
+
+    // Sheet 2: 歷史資產
+    const histHeaders = [t.excelCol_date, t.excelCol_totalValue, t.excelCol_totalPnL, t.excelCol_currency];
+    const histDates = Object.keys(state.history).sort();
+    const histRows = histDates.map(d => {
+      const h = state.history[d];
+      return [d, h.totalValue, h.totalPnL, h.currency];
+    });
+    const ws2Data = [histHeaders].concat(histRows);
+    const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
+    ws2["!cols"] = [{wch:14},{wch:18},{wch:18},{wch:10}];
+    ["A1","B1","C1","D1"].forEach(addr => {
+      if (!ws2[addr]) return;
+      ws2[addr].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+        fill: { fgColor: { rgb: "2D1B4E" } },
+        alignment: { horizontal: "center", vertical: "center" }
+      };
+    });
+    for (let r = 1; r < ws2Data.length; r++) {
+      const rowNum = r + 1;
+      const cellB = "B" + rowNum; if (ws2[cellB]) ws2[cellB].z = intFmt;
+      const cellC = "C" + rowNum;
+      if (ws2[cellC]) {
+        ws2[cellC].z = signedFmt;
+        const v = ws2[cellC].v;
+        if (v != null && !isNaN(v)) {
+          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
+          ws2[cellC].s = { font: { color: { rgb: colorRgb }, bold: true } };
+        }
+      }
+    }
+    ws2["!freeze"] = { xSplit: 0, ySplit: 1 };
+
+    XLSX.utils.book_append_sheet(wb, ws2, t.excelSheet2);
+
+    const fileName = "portfolio_" + new Date().toISOString().slice(0,10) + ".xlsx";
+    XLSX.writeFile(wb, fileName);
+    showStatus(I18N[state.lang].excelDone, "success");
+  } catch(e) {
+    console.error("Excel error:", e);
+    showStatus("Excel failed: " + e.message, "error");
+  }
+}
+
+/* ===================== PDF ===================== */
 async function exportPDF() {
   showStatus("Generating PDF...", "info", true);
   try {
@@ -1388,6 +1650,7 @@ async function exportPDF() {
     showStatus("PDF saved!", "success");
   } catch(e) { console.error("PDF error:", e); showStatus("PDF failed: " + e.message, "error"); }
 }
+
 function generateShareLink() {
   const payload = {
     lang:state.lang, currency:state.currency, colorMode:state.colorMode,
@@ -1402,6 +1665,7 @@ function generateShareLink() {
     }).catch(function(){ prompt("Share link:", url); });
   } else { prompt("Share link:", url); }
 }
+
 function init() {
   loadState();
   if (state.rows.length === 0) { for (let i=0; i<10; i++) state.rows.push(makeRow()); }
@@ -1409,8 +1673,11 @@ function init() {
   document.getElementById("currencySelect").value = state.currency;
   document.getElementById("colorSelect").value = state.colorMode;
   applyColorMode(); applyI18n(); renderTable();
+  bindChartControls();
+  renderChart();
+
   document.getElementById("langSelect").addEventListener("change", function(e) {
-    state.lang = e.target.value; saveState(); applyI18n(); renderTable();
+    state.lang = e.target.value; saveState(); applyI18n(); renderTable(); renderChart();
   });
   document.getElementById("currencySelect").addEventListener("change", function(e) {
     state.currency = e.target.value; saveState(); renderTable();
@@ -1430,6 +1697,7 @@ function init() {
     if (e.target.id === "colModal") closeColModal();
   });
   document.getElementById("btnPdf").addEventListener("click", exportPDF);
+  document.getElementById("btnExcel").addEventListener("click", exportExcel);
   document.getElementById("btnShare").addEventListener("click", generateShareLink);
   document.getElementById("btnClear").addEventListener("click", function() {
     if (confirm(I18N[state.lang].confirmClear)) {
