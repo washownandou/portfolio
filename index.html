@@ -918,6 +918,9 @@ async function fetchWithTimeout(url, opts, timeout) {
 }
 
 const PROXIES = [
+  // ⭐ 我的 Cloudflare Worker - 最穩定，第一順位
+  { name: "myWorker",    build: u => "https://stock-proxy.washownandou.workers.dev/?url=" + encodeURIComponent(u) },
+  // 以下為公開 proxy 作為 fallback（萬一 Worker 掛掉時備用）
   { name: "allorigins",  build: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u) },
   { name: "corsproxy.io",build: u => "https://corsproxy.io/?" + encodeURIComponent(u) },
   { name: "codetabs",    build: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u) },
