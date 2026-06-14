@@ -56,7 +56,6 @@
   .btn-danger { background: linear-gradient(135deg, #e53935, #b71c1c); border: none; }
   .btn-secondary { background: linear-gradient(135deg, #546e7a, #37474f); border: none; }
   .action-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-
   .btn-update-main {
     font-size: 17px !important;
     font-weight: 800 !important;
@@ -78,7 +77,6 @@
     0%, 100% { box-shadow: 0 4px 16px rgba(94,53,177,0.5), 0 0 0 0 rgba(186,104,200,0.5); }
     50%      { box-shadow: 0 4px 16px rgba(94,53,177,0.7), 0 0 0 8px rgba(186,104,200,0); }
   }
-
   .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
   table { width: 100%; border-collapse: collapse; min-width: 1300px; table-layout: fixed; }
   th {
@@ -100,13 +98,11 @@
   tr.row-item:hover td { background: rgba(255,255,255,0.03); }
   tr.dragging { opacity: 0.4; background: rgba(94,53,177,0.2); }
   tr.drag-over td { border-top: 2px solid #ba68c8 !important; }
-
   td input, td select {
     width: 100%; text-align: center;
     font-family: "SF Mono", Consolas, monospace; font-size: 13px; padding: 6px 4px;
   }
   td input.num { text-align: right; padding-right: 6px; }
-
   .cost-wrap { display: flex; align-items: center; gap: 4px; }
   .cost-wrap input { flex: 1; min-width: 0; }
   .cost-currency {
@@ -119,12 +115,10 @@
   }
   .drag-handle:hover { color: #ba68c8; }
   .drag-handle:active { cursor: grabbing; }
-
   .col-output { font-family: "SF Mono", Consolas, monospace; font-weight: 500; }
   .up { color: var(--up-color, #ef5350); }
   .down { color: var(--down-color, #26a69a); }
   .flat { color: #b0bec5; }
-
   .summary {
     margin-top: 20px; padding: 24px 32px;
     background: rgba(0,0,0,0.25); border-radius: 12px;
@@ -159,7 +153,6 @@
   .summary-row.fx-row .summary-right {
     font-size: 12px; color: #78909c; font-weight: 500;
   }
-
   .del-btn { background: transparent; border: none; color: #ef5350; cursor: pointer; font-size: 18px; padding: 4px 8px; }
   .del-btn:hover { color: #ff8a80; }
   .status { margin: 12px 0; padding: 10px 14px; border-radius: 8px; font-size: 13px; display: none; }
@@ -175,7 +168,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .hint { font-size: 11px; color: #78909c; margin: -8px 0 12px 4px; }
-
   .modal-backdrop {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7);
     display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -216,6 +208,29 @@
   .col-item.locked .grip { color: #455a64; }
   .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
 
+  /* ★ 注意事項區塊 */
+  .notice {
+    margin-top: 24px; padding: 20px 24px;
+    background: rgba(0,0,0,0.18); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px; line-height: 1.7;
+    color: #90a4ae;
+  }
+  .notice h3 {
+    color: #e8eaf6; font-size: 15px; font-weight: 700;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .notice ul { list-style: none; padding-left: 0; }
+  .notice li { padding: 4px 0; padding-left: 20px; position: relative; }
+  .notice li::before {
+    content: "•"; position: absolute; left: 6px; color: #5e35b1; font-weight: bold;
+  }
+  .notice .notice-section { margin-bottom: 16px; }
+  .notice .notice-section:last-child { margin-bottom: 0; }
+  .notice strong { color: #b39ddb; }
+  .notice .warn { color: #ffb74d; }
+  .notice .ok { color: #81c784; }
+
   @media (max-width: 900px) {
     .summary-row { grid-template-columns: 1fr; }
     .summary-row .summary-right { text-align: left; }
@@ -230,7 +245,6 @@
 </style>
 </head>
 <body>
-
 <div class="container" id="app">
   <div class="header">
     <h1 id="title">📊 投資組合追蹤器</h1>
@@ -249,7 +263,6 @@
       </select>
     </div>
   </div>
-
   <div class="action-bar">
     <button class="btn-primary btn-update-main" id="btnUpdate">🔄 <span data-i18n="update">更新股價</span></button>
     <button class="btn-success" id="btnAdd">➕ <span data-i18n="addRow">新增列</span></button>
@@ -257,12 +270,10 @@
     <button class="btn-info" id="btnPdf">📄 <span data-i18n="pdf">匯出 PDF</span></button>
     <button class="btn-warn" id="btnShare">🔗 <span data-i18n="share">分享連結</span></button>
     <button class="btn-danger" id="btnClear">🗑 <span data-i18n="clear">清除全部</span></button>
+    <button class="btn-warn" id="btnForceUpdate" title="忽略快取強制更新所有股票" style="font-size:12px;padding:6px 10px;">⚡ <span data-i18n="forceUpdate">強制更新</span></button>
   </div>
-
   <div class="hint" id="dragHint">💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位</div>
-
   <div id="status" class="status"></div>
-
   <div class="table-wrap">
     <table id="portfolioTable">
       <colgroup id="tableColgroup"></colgroup>
@@ -270,7 +281,6 @@
       <tbody id="tableBody"></tbody>
     </table>
   </div>
-
   <div class="summary" id="summary">
     <div class="summary-row">
       <span class="summary-left">📅 <span id="todayDate">-</span></span>
@@ -301,8 +311,56 @@
       </span>
     </div>
   </div>
-</div>
 
+  <!-- ★ 注意事項區塊 -->
+  <div class="notice" id="noticeBox">
+    <h3>📌 <span data-i18n="noticeTitle">使用須知</span></h3>
+
+    <div class="notice-section">
+      <strong data-i18n="noticeUpdateTitle">🔄 股價更新機制（智慧快取）</strong>
+      <ul>
+        <li data-i18n="noticeUpdate1">為節省流量，系統會自動判斷各市場「最近一次收盤時間」，已抓過且收盤價未更新的股票會跳過。</li>
+        <li data-i18n="noticeUpdate2"><span class="ok">台股交易時間</span>：週一至週五 09:00 ~ 13:30（台北時間），13:30 收盤後當日股價定案。</li>
+        <li data-i18n="noticeUpdate3"><span class="ok">美股交易時間</span>：週一至週五 22:30 ~ 翌日 05:00（台北時間，含日光節約調整），收盤後當日股價定案。</li>
+        <li data-i18n="noticeUpdate4">盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。</li>
+        <li data-i18n="noticeUpdate5">想強制重抓所有股票（忽略快取），請點右上角的 <strong>⚡ 強制更新</strong> 按鈕。</li>
+        <li data-i18n="noticeUpdate6">修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。</li>
+      </ul>
+    </div>
+
+    <div class="notice-section">
+      <strong data-i18n="noticeDataTitle">💾 資料儲存</strong>
+      <ul>
+        <li data-i18n="noticeData1">所有資料儲存在「您目前的瀏覽器」中（localStorage），<span class="warn">換瀏覽器/換裝置/清快取會消失</span>。</li>
+        <li data-i18n="noticeData2">想跨裝置使用 → 點 <strong>🔗 分享連結</strong> 把連結存入書籤，下次打開即可還原。</li>
+        <li data-i18n="noticeData3">分享連結含您的全部資料（股數、成本），<span class="warn">請勿貼到公開場合</span>。</li>
+      </ul>
+    </div>
+
+    <div class="notice-section">
+      <strong data-i18n="noticeDataSourceTitle">📈 資料來源與限制</strong>
+      <ul>
+        <li data-i18n="noticeSource1">股價資料來自 Yahoo Finance，<span class="warn">非即時報價，可能有 15~20 分鐘延遲</span>，僅供參考，不構成任何投資建議。</li>
+        <li data-i18n="noticeSource2">台股代號格式：4~6 位數字（如 2330、0050、00713），支援 ETF 含字母結尾（如 00981A）。</li>
+        <li data-i18n="noticeSource3">美股代號格式：1~5 位英文字母（如 AAPL、TSLA、MU）。</li>
+        <li data-i18n="noticeSource4">不支援：興櫃 / 未上市 / 加密貨幣 / 期權期貨 / 港股 / 日股。</li>
+        <li data-i18n="noticeSource5">USD/TWD 匯率取自 open.er-api.com，每次按更新會自動刷新。</li>
+      </ul>
+    </div>
+
+    <div class="notice-section">
+      <strong data-i18n="noticeUsageTitle">💡 使用技巧</strong>
+      <ul>
+        <li data-i18n="noticeUsage1">手機/平板使用 → 善用 <strong>⚙️ 欄位設定</strong> 隱藏不需要的欄位，畫面更精簡。</li>
+        <li data-i18n="noticeUsage2">拖曳每列最左邊的 <strong>⋮⋮</strong> 可調整投資組合的顯示順序。</li>
+        <li data-i18n="noticeUsage3">拖曳欄位標題可調整欄位左右順序。</li>
+        <li data-i18n="noticeUsage4">成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。</li>
+        <li data-i18n="noticeUsage5">可切換顯示幣別（TWD/USD），所有金額會自動換算。</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
 <div class="modal-backdrop" id="colModal">
   <div class="modal">
     <h2>⚙️ <span data-i18n="columnSettings">欄位設定</span></h2>
@@ -314,12 +372,12 @@
     </div>
   </div>
 </div>
-
 <script>
 const I18N = {
   zh: {
     title: "📊 投資組合追蹤器",
     update: "更新股價", addRow: "新增列", pdf: "匯出 PDF", share: "分享連結", clear: "清除全部",
+    forceUpdate: "強制更新",
     columns: "欄位設定", columnSettings: "欄位設定",
     colModalHint: "拖曳調整順序，勾選顯示／取消勾選隱藏。「拖曳手把」「市場」「股票代號」「刪除」為固定欄位。",
     reset: "重設預設", done: "完成",
@@ -335,11 +393,37 @@ const I18N = {
     shareCopied: "分享連結已複製到剪貼簿！",
     confirmClear: "確定要清除所有資料嗎？",
     partial: "部分成功：",
-    dragHint: "💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位"
+    skipped: "已跳過（快取仍有效）：",
+    dragHint: "💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位",
+    noticeTitle: "使用須知",
+    noticeUpdateTitle: "🔄 股價更新機制（智慧快取）",
+    noticeUpdate1: "為節省流量，系統會自動判斷各市場「最近一次收盤時間」，已抓過且收盤價未更新的股票會跳過。",
+    noticeUpdate2: "台股交易時間：週一至週五 09:00 ~ 13:30（台北時間），13:30 收盤後當日股價定案。",
+    noticeUpdate3: "美股交易時間：週一至週五 22:30 ~ 翌日 05:00（台北時間，含日光節約調整），收盤後當日股價定案。",
+    noticeUpdate4: "盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。",
+    noticeUpdate5: "想強制重抓所有股票（忽略快取），請點右上角的 ⚡ 強制更新 按鈕。",
+    noticeUpdate6: "修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。",
+    noticeDataTitle: "💾 資料儲存",
+    noticeData1: "所有資料儲存在「您目前的瀏覽器」中（localStorage），換瀏覽器/換裝置/清快取會消失。",
+    noticeData2: "想跨裝置使用 → 點 🔗 分享連結 把連結存入書籤，下次打開即可還原。",
+    noticeData3: "分享連結含您的全部資料（股數、成本），請勿貼到公開場合。",
+    noticeDataSourceTitle: "📈 資料來源與限制",
+    noticeSource1: "股價資料來自 Yahoo Finance，非即時報價，可能有 15~20 分鐘延遲，僅供參考，不構成任何投資建議。",
+    noticeSource2: "台股代號格式：4~6 位數字（如 2330、0050、00713），支援 ETF 含字母結尾（如 00981A）。",
+    noticeSource3: "美股代號格式：1~5 位英文字母（如 AAPL、TSLA、MU）。",
+    noticeSource4: "不支援：興櫃 / 未上市 / 加密貨幣 / 期權期貨 / 港股 / 日股。",
+    noticeSource5: "USD/TWD 匯率取自 open.er-api.com，每次按更新會自動刷新。",
+    noticeUsageTitle: "💡 使用技巧",
+    noticeUsage1: "手機/平板使用 → 善用 ⚙️ 欄位設定 隱藏不需要的欄位，畫面更精簡。",
+    noticeUsage2: "拖曳每列最左邊的 ⋮⋮ 可調整投資組合的顯示順序。",
+    noticeUsage3: "拖曳欄位標題可調整欄位左右順序。",
+    noticeUsage4: "成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。",
+    noticeUsage5: "可切換顯示幣別（TWD/USD），所有金額會自動換算。"
   },
   en: {
     title: "📊 Portfolio Tracker",
     update: "Update Prices", addRow: "Add Row", pdf: "Export PDF", share: "Share Link", clear: "Clear All",
+    forceUpdate: "Force Update",
     columns: "Columns", columnSettings: "Column Settings",
     colModalHint: "Drag to reorder, check/uncheck to show/hide. Drag handle, Market, Symbol and Delete are fixed.",
     reset: "Reset Default", done: "Done",
@@ -355,10 +439,34 @@ const I18N = {
     shareCopied: "Share link copied to clipboard!",
     confirmClear: "Clear all data?",
     partial: "Partial success: ",
-    dragHint: "💡 Tip: Drag ⋮⋮ on the left to reorder rows; drag column headers to reorder columns; click ⚙️ Columns to show/hide."
+    skipped: "Skipped (cache still valid): ",
+    dragHint: "💡 Tip: Drag ⋮⋮ to reorder rows; drag column headers to reorder columns; click ⚙️ Columns to show/hide.",
+    noticeTitle: "User Guide",
+    noticeUpdateTitle: "🔄 Price Update Mechanism (Smart Cache)",
+    noticeUpdate1: "To save bandwidth, the system auto-checks each market's last close time. Stocks already fetched after the latest close will be skipped.",
+    noticeUpdate2: "TW Market hours: Mon-Fri 09:00 ~ 13:30 (Taipei time). Prices finalize after 13:30 close.",
+    noticeUpdate3: "US Market hours: Mon-Fri 22:30 ~ next day 05:00 (Taipei time, DST-adjusted). Prices finalize after close.",
+    noticeUpdate4: "During market hours, updates fetch real-time prices. After close, only stocks missing today's close price are fetched.",
+    noticeUpdate5: "To force-refresh all stocks (ignore cache), click the ⚡ Force Update button.",
+    noticeUpdate6: "Editing shares or cost only triggers recalculation, no API call. Feel free to adjust.",
+    noticeDataTitle: "💾 Data Storage",
+    noticeData1: "All data is stored in your current browser (localStorage). Changing browser/device or clearing cache will lose data.",
+    noticeData2: "For cross-device use → click 🔗 Share Link, save it as a bookmark, and open it later to restore.",
+    noticeData3: "Share links contain all your data (shares, cost). Do not paste in public.",
+    noticeDataSourceTitle: "📈 Data Source & Limitations",
+    noticeSource1: "Prices from Yahoo Finance, NOT real-time (15-20 min delay possible). For reference only, not investment advice.",
+    noticeSource2: "TW symbols: 4-6 digits (e.g., 2330, 0050, 00713), with optional letter suffix (e.g., 00981A).",
+    noticeSource3: "US symbols: 1-5 letters (e.g., AAPL, TSLA, MU).",
+    noticeSource4: "Not supported: OTC unlisted / Crypto / Options / Futures / HK stocks / JP stocks.",
+    noticeSource5: "USD/TWD rate from open.er-api.com, auto-refreshed on each update.",
+    noticeUsageTitle: "💡 Tips",
+    noticeUsage1: "On mobile/tablet → use ⚙️ Columns to hide unwanted columns for cleaner view.",
+    noticeUsage2: "Drag ⋮⋮ on each row's left to reorder your portfolio.",
+    noticeUsage3: "Drag column headers to reorder columns horizontally.",
+    noticeUsage4: "If cost is empty, Open P/L and ROI% will show '-'.",
+    noticeUsage5: "Switch display currency (TWD/USD) anytime, all amounts auto-convert."
   }
 };
-
 const COLUMN_DEFS = {
   drag:        { key: "drag",        i18n: null,           width: "28px", fixed: true,  render: "drag" },
   market:      { key: "market",      i18n: "market",       width: "70px", fixed: true,  render: "market" },
@@ -375,7 +483,6 @@ const COLUMN_DEFS = {
   roi:         { key: "roi",         i18n: "roi",          width: "auto", fixed: false, render: "roi" },
   del:         { key: "del",         i18n: null,           width: "35px", fixed: true,  render: "del" }
 };
-
 const DEFAULT_COLUMNS = [
   { key: "drag",         visible: true },
   { key: "market",       visible: true },
@@ -392,7 +499,6 @@ const DEFAULT_COLUMNS = [
   { key: "roi",          visible: true },
   { key: "del",          visible: true }
 ];
-
 let state = {
   lang: "zh", currency: "TWD", colorMode: "tw",
   rows: [], fxRate: null,
@@ -428,7 +534,6 @@ function loadState() {
     state.columns = state.columns.filter(c => COLUMN_DEFS[c.key]);
   }
 }
-
 function detectMarket(symbol) {
   if (!symbol) return "";
   const s = symbol.trim().toUpperCase();
@@ -448,7 +553,6 @@ function applyColorMode() {
     root.style.setProperty("--up-color", "#26a69a"); root.style.setProperty("--down-color", "#ef5350");
   }
 }
-
 function applyI18n() {
   const t = I18N[state.lang];
   document.getElementById("title").textContent = t.title;
@@ -458,18 +562,16 @@ function applyI18n() {
   });
   document.getElementById("dragHint").textContent = t.dragHint;
 }
-
 function makeRow(d) {
   d = d || {};
   return { market:d.market||"", symbol:d.symbol||"", shares:d.shares||"", cost:d.cost||"",
     price:d.price!=null?d.price:null, prevClose:d.prevClose!=null?d.prevClose:null,
-    currency:d.currency||"", error:d.error||null };
+    currency:d.currency||"", error:d.error||null,
+    lastFetchAt: d.lastFetchAt || null };  // ★ 新增：上次抓取時間戳
 }
-
 function getVisibleColumns() {
   return state.columns.filter(c => c.visible).map(c => COLUMN_DEFS[c.key]).filter(Boolean);
 }
-
 function computeRowData(row) {
   const shares = parseFloat(row.shares)||0;
   const cost = parseFloat(row.cost)||0;
@@ -497,7 +599,6 @@ function computeRowData(row) {
     dispOpenPnL: toDisp(openPnL)
   };
 }
-
 function renderCell(col, row, idx, data) {
   const td = document.createElement("td");
   const t = I18N[state.lang];
@@ -565,11 +666,9 @@ function renderCell(col, row, idx, data) {
   }
   return td;
 }
-
 function renderTable() {
   const cols = getVisibleColumns();
   const t = I18N[state.lang];
-
   const colgroup = document.getElementById("tableColgroup");
   colgroup.innerHTML = "";
   cols.forEach(col => {
@@ -577,7 +676,6 @@ function renderTable() {
     if (col.width && col.width !== "auto") c.style.width = col.width;
     colgroup.appendChild(c);
   });
-
   const thead = document.getElementById("tableHead");
   thead.innerHTML = "";
   cols.forEach(col => {
@@ -596,7 +694,6 @@ function renderTable() {
     }
     thead.appendChild(th);
   });
-
   const tbody = document.getElementById("tableBody");
   tbody.innerHTML = "";
   state.rows.forEach((row, idx) => {
@@ -610,7 +707,6 @@ function renderTable() {
     });
     tbody.appendChild(tr);
   });
-
   tbody.querySelectorAll("input, select").forEach(el => {
     el.addEventListener("change", onCellChange);
     el.addEventListener("input", onCellChange);
@@ -625,13 +721,10 @@ function renderTable() {
       saveState(); renderTable();
     });
   });
-
   bindRowDragEvents(tbody);
   bindColumnDragEvents(thead);
-
   renderSummary();
 }
-
 let dragSrcIdx = null;
 function bindRowDragEvents(tbody) {
   const rows = tbody.querySelectorAll("tr.row-item");
@@ -671,7 +764,6 @@ function bindRowDragEvents(tbody) {
     });
   });
 }
-
 let dragColKey = null;
 function bindColumnDragEvents(thead) {
   const ths = thead.querySelectorAll("th.draggable-col");
@@ -707,7 +799,6 @@ function bindColumnDragEvents(thead) {
     });
   });
 }
-
 function moveColumn(srcKey, targetKey) {
   const srcIdx = state.columns.findIndex(c => c.key === srcKey);
   if (srcIdx < 0) return;
@@ -716,7 +807,6 @@ function moveColumn(srcKey, targetKey) {
   if (newTargetIdx < 0) state.columns.push(moved);
   else state.columns.splice(newTargetIdx, 0, moved);
 }
-
 function openColModal() {
   renderColList();
   document.getElementById("colModal").classList.add("show");
@@ -743,7 +833,6 @@ function renderColList() {
       (def.fixed ? '<span style="font-size:10px;color:#78909c;">🔒</span>' : '');
     list.appendChild(div);
   });
-
   list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.addEventListener("change", function() {
       const key = cb.getAttribute("data-colkey");
@@ -754,7 +843,6 @@ function renderColList() {
       }
     });
   });
-
   let modalDragKey = null;
   list.querySelectorAll(".col-item").forEach(item => {
     if (item.classList.contains("locked")) return;
@@ -787,20 +875,16 @@ function renderColList() {
     });
   });
 }
-
 function resetColumns() {
   state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
   saveState();
   renderColList();
   renderTable();
 }
-
-// ★ 修正後的 onCellChange：股票代號輸入不會失焦
 function onCellChange(e) {
   const idx = parseInt(e.target.dataset.idx);
   const field = e.target.dataset.field;
   let v = e.target.value;
-
   if (field === "symbol") {
     const upperV = v.toUpperCase();
     if (v !== upperV) {
@@ -822,17 +906,19 @@ function onCellChange(e) {
   } else {
     state.rows[idx][field] = v;
   }
-
   scheduleSave();
-  if (field==="shares" || field==="cost") renderSummary();
+  // ★ 修改股數/成本只觸發重算，不抓 API
+  if (field==="shares" || field==="cost") {
+    // 即時重算該列的衍生欄位 + 總計
+    updateRowOutputUI(idx);
+    renderSummary();
+  }
 }
-
 let saveTimer = null;
 function scheduleSave() {
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(function(){ saveState(); saveTimer = null; }, 250);
 }
-
 function updateRowMarketUI(idx) {
   const tbody = document.getElementById("tableBody");
   if (!tbody) return;
@@ -844,7 +930,27 @@ function updateRowMarketUI(idx) {
     costLabel.textContent = m === "us" ? "USD" : (m === "tw" ? "TWD" : "");
   }
 }
-
+// ★ 即時更新該列的輸出欄位（股數/成本變化時）
+function updateRowOutputUI(idx) {
+  const tbody = document.getElementById("tableBody");
+  if (!tbody) return;
+  const tr = tbody.querySelector('tr[data-idx="'+idx+'"]');
+  if (!tr) return;
+  const row = state.rows[idx];
+  const data = computeRowData(row);
+  const cols = getVisibleColumns();
+  const tds = tr.querySelectorAll("td");
+  cols.forEach((col, i) => {
+    const td = tds[i];
+    if (!td) return;
+    // 只更新輸出欄位 (跳過輸入欄)
+    if (["price","prevClose","changePrice","changePct","changeVal","currentValue","openPnL","roi"].indexOf(col.render) >= 0) {
+      const newTd = renderCell(col, row, idx, data);
+      td.className = newTd.className;
+      td.innerHTML = newTd.innerHTML;
+    }
+  });
+}
 function renderSummary() {
   let totalCur=0, totalDayPnL=0, totalPrevValue=0, totalCost=0;
   let hasPrice=false, hasCost=false;
@@ -862,12 +968,10 @@ function renderSummary() {
     }
     if (cost>0) { hasCost = true; totalCost += convertCurrency(cost*shares, rowCurrency, state.currency); }
   });
-
   document.getElementById("todayDate").textContent = new Date().toISOString().slice(0,10);
   const dayPctEl=document.getElementById("dayPct"), dayPnLEl=document.getElementById("dayPnL");
   const totValEl=document.getElementById("totalValue"), totPnLEl=document.getElementById("totalPnL");
   const fxEl=document.getElementById("fxRate");
-
   if (hasPrice && totalPrevValue>0) {
     const pct = totalDayPnL/totalPrevValue*100;
     dayPctEl.textContent = fmtPct(pct); dayPctEl.className = "summary-value "+colorClass(pct);
@@ -887,7 +991,6 @@ function renderSummary() {
   }
   fxEl.textContent = state.fxRate?state.fxRate.toFixed(4):"-";
 }
-
 function convertCurrency(val, from, to) {
   if (from===to) return val;
   if (!state.fxRate) return val;
@@ -907,6 +1010,122 @@ async function fetchFxRate() {
   state.fxRate = state.fxRate || 32.0;
 }
 
+/* ===================== ★ 市場收盤時間判斷 ===================== */
+
+// 取得指定時區的 Date 物件（用台北時區為基準）
+function getTaipeiTime() {
+  // 將現在時間換成台北時間的元件
+  const now = new Date();
+  // 用 Intl 拿到台北各時間元件
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false
+  });
+  const parts = {};
+  fmt.formatToParts(now).forEach(p => { parts[p.type] = p.value; });
+  return {
+    year: parseInt(parts.year),
+    month: parseInt(parts.month),
+    day: parseInt(parts.day),
+    hour: parseInt(parts.hour === "24" ? "0" : parts.hour),
+    minute: parseInt(parts.minute),
+    weekday: new Date(parts.year + "-" + parts.month + "-" + parts.day + "T12:00:00").getDay()
+    // 0=日, 1=一, ..., 6=六
+  };
+}
+
+// 取得 N 天前的日期 (台北)
+function shiftDate(dateObj, days) {
+  const d = new Date(dateObj.year, dateObj.month-1, dateObj.day);
+  d.setDate(d.getDate() + days);
+  return {
+    year: d.getFullYear(),
+    month: d.getMonth()+1,
+    day: d.getDate(),
+    weekday: d.getDay()
+  };
+}
+
+// 把 (y,m,d,h,min) 視為台北時間，轉成 UTC timestamp (ms)
+function taipeiToTimestamp(y, m, d, h, min) {
+  // 台北是 UTC+8
+  const utcMs = Date.UTC(y, m-1, d, h, min, 0);
+  return utcMs - 8 * 3600 * 1000;
+}
+
+// 取得「最近一次台股收盤時間」的 timestamp
+// 規則：交易日 13:30 (台北)。若今天非交易日或還沒到 13:30，則往前找最近一個交易日的 13:30
+function getLastCloseTW() {
+  const t = getTaipeiTime();
+  // 嘗試今天
+  let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
+  // 今天若是平日且已過 13:30
+  const todayClosed = (t.weekday >= 1 && t.weekday <= 5) &&
+                      (t.hour > 13 || (t.hour === 13 && t.minute >= 30));
+  if (todayClosed) {
+    return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
+  }
+  // 否則往前找最近的交易日
+  for (let i=1; i<=7; i++) {
+    candidate = shiftDate(candidate, -1);
+    if (candidate.weekday >= 1 && candidate.weekday <= 5) {
+      return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
+    }
+  }
+  return Date.now(); // 不應該發生
+}
+
+// 取得「最近一次美股收盤時間」的 timestamp
+// 規則：美股收盤 04:00 (台北，UTC+8，等於 EST 15:00) ~ 05:00 (台北，等於 EDT 16:00)
+// 為簡化，採用「台北 05:00 = 美股收盤完成」這個保守值，意即收盤後一定要過台北 05:00 才算今日定案
+// 收盤對應的「日期」是美東當日（如美股 11/15 收盤 = 台北 11/16 凌晨 05:00）
+function getLastCloseUS() {
+  const t = getTaipeiTime();
+  // 因為美股是「美東日期」收盤，我們以「台北今天」為基準判斷
+  // 台北現在的星期幾、時間
+  // 美股收盤對應台北：週二 ~ 週六 早上 05:00
+  // 例：週一美股 = 台北週二 05:00 收盤
+  //    週五美股 = 台北週六 05:00 收盤
+
+  // 候選：今天台北 05:00
+  let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
+  const todayClosed = (t.hour > 5 || (t.hour === 5 && t.minute > 0));
+
+  // 檢查 candidate 是否為「美股收盤後的下一個台北日期」
+  // 美股交易日：週一~週五（美東）
+  // 對應台北：週二~週六凌晨
+  function isValidCloseDayTW(weekday) {
+    // 週二=2 ~ 週六=6 (台北)
+    return weekday >= 2 && weekday <= 6;
+  }
+
+  if (todayClosed && isValidCloseDayTW(candidate.weekday)) {
+    return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 5, 0);
+  }
+  // 往前找
+  for (let i=1; i<=10; i++) {
+    candidate = shiftDate(candidate, -1);
+    if (isValidCloseDayTW(candidate.weekday)) {
+      return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 5, 0);
+    }
+  }
+  return Date.now();
+}
+
+// 判斷一支股票是否需要重抓
+function shouldFetch(row, forceUpdate) {
+  if (forceUpdate) return true;
+  if (!row.price || !row.lastFetchAt) return true;  // 沒抓過
+  const lastClose = row.market === "tw" ? getLastCloseTW() : getLastCloseUS();
+  // 上次抓取時間 < 該市場最近一次收盤時間 → 要重抓
+  if (row.lastFetchAt < lastClose) return true;
+  // 否則跳過（快取仍有效）
+  return false;
+}
+
+/* ===================== Price APIs ===================== */
 async function fetchWithTimeout(url, opts, timeout) {
   timeout = timeout || 15000;
   const controller = new AbortController();
@@ -916,20 +1135,15 @@ async function fetchWithTimeout(url, opts, timeout) {
     clearTimeout(id); return res;
   } catch(e) { clearTimeout(id); throw e; }
 }
-
 const PROXIES = [
-  // ⭐ 我的 Cloudflare Worker - 最穩定，第一順位
   { name: "myWorker",    build: u => "https://stock-proxy.washownandou.workers.dev/?url=" + encodeURIComponent(u) },
-  // 以下為公開 proxy 作為 fallback（萬一 Worker 掛掉時備用）
   { name: "allorigins",  build: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u) },
   { name: "corsproxy.io",build: u => "https://corsproxy.io/?" + encodeURIComponent(u) },
   { name: "codetabs",    build: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u) },
   { name: "thingproxy",  build: u => "https://thingproxy.freeboard.io/fetch/" + u },
   { name: "cors.sh",     build: u => "https://proxy.cors.sh/" + u }
 ];
-
 let lastGoodProxyIdx = 0;
-
 async function fetchViaProxy(url, asJson) {
   const order = [];
   for (let i=0; i<PROXIES.length; i++) {
@@ -941,7 +1155,7 @@ async function fetchViaProxy(url, asJson) {
     const purl = proxy.build(url);
     try {
       const res = await fetchWithTimeout(purl, {
-        headers: { "Accept": "application/json, text/plain, */*" }
+        headers: { "Accept": "application/json, text/plain, " + "*" + "/" + "*" }
       }, 12000);
       if (!res.ok) {
         lastErr = new Error("HTTP " + res.status);
@@ -972,7 +1186,6 @@ async function fetchViaProxy(url, asJson) {
   }
   throw lastErr || new Error("All proxies failed");
 }
-
 function parseYahooResult(result) {
   const meta = result.meta;
   const quote = result.indicators && result.indicators.quote && result.indicators.quote[0];
@@ -999,7 +1212,6 @@ function parseYahooResult(result) {
   }
   return { price: price, prevClose: prevClose };
 }
-
 async function fetchTWPrice(symbol) {
   symbol = symbol.trim().toUpperCase();
   let lastErr = null;
@@ -1040,7 +1252,6 @@ async function fetchTWPrice(symbol) {
   } catch(e) { console.warn("[TW] TWSE OpenAPI failed: " + e.message); }
   throw lastErr || new Error("台股 " + symbol + " 全部來源失敗");
 }
-
 async function fetchUSPrice(symbol) {
   symbol = symbol.trim().toUpperCase();
   const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=10d";
@@ -1053,12 +1264,10 @@ async function fetchUSPrice(symbol) {
   console.log("[US] ✓ " + symbol + " price=" + data.price + " prev=" + data.prevClose);
   return data;
 }
-
 async function fetchPrice(market, symbol) {
   if (market === "tw") return fetchTWPrice(symbol);
   return fetchUSPrice(symbol);
 }
-
 async function fetchPriceWithRetry(market, symbol, retries) {
   retries = retries || 1;
   let lastErr = null;
@@ -1074,19 +1283,27 @@ async function fetchPriceWithRetry(market, symbol, retries) {
   }
   throw lastErr;
 }
-
 function countValidRows() {
   return state.rows.filter(r => r.symbol && r.market).length;
 }
 
-async function updateAllPrices() {
+// ★ 主更新函式：加入 forceUpdate 參數
+async function updateAllPrices(forceUpdate) {
+  forceUpdate = forceUpdate || false;
   showStatus(I18N[state.lang].fetching, "info", true);
   await fetchFxRate();
-  let okCount = 0, failCount = 0;
+  let okCount = 0, failCount = 0, skipCount = 0;
   const total = countValidRows();
   for (let idx = 0; idx < state.rows.length; idx++) {
     const row = state.rows[idx];
     if (!row.symbol || !row.market) continue;
+    // ★ 智慧快取判斷
+    if (!shouldFetch(row, forceUpdate)) {
+      skipCount++;
+      console.log("[Skip] " + row.symbol + " (cached, last fetch: " + new Date(row.lastFetchAt).toLocaleString() + ")");
+      showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
+      continue;
+    }
     try {
       const data = await fetchPriceWithRetry(row.market, row.symbol, 1);
       if (data && data.price) {
@@ -1094,6 +1311,7 @@ async function updateAllPrices() {
         state.rows[idx].prevClose = data.prevClose;
         state.rows[idx].currency = row.market==="us"?"USD":"TWD";
         state.rows[idx].error = null;
+        state.rows[idx].lastFetchAt = Date.now();  // ★ 記錄抓取時間
         okCount++;
       } else { state.rows[idx].error = "No data"; failCount++; }
     } catch(e) {
@@ -1101,23 +1319,36 @@ async function updateAllPrices() {
       failCount++;
       console.error("[Update] ✗ " + row.symbol + ":", e.message);
     }
-    showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount)+"/" + total + ")", "info", true);
+    showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
     await new Promise(r => setTimeout(r, 200));
   }
   saveState(); renderTable();
-  if (failCount === 0 && okCount > 0) showStatus(I18N[state.lang].done2 + " ("+okCount+")", "success");
-  else if (okCount > 0) showStatus(I18N[state.lang].partial + okCount + " ✓ / " + failCount + " ✗", "info");
-  else if (failCount > 0) showStatus(I18N[state.lang].err + failCount + " 檔失敗，請按 F12 看 Console", "error");
-  else showStatus("請先輸入股票代號", "info");
+  // ★ 顯示包含「跳過」的結果
+  const parts = [];
+  if (okCount > 0) parts.push(okCount + " ✓");
+  if (skipCount > 0) parts.push(skipCount + " 📦");
+  if (failCount > 0) parts.push(failCount + " ✗");
+  const msg = parts.join(" / ");
+  if (failCount === 0 && (okCount + skipCount) > 0) {
+    if (skipCount > 0 && okCount === 0) {
+      showStatus("📦 " + I18N[state.lang].skipped + skipCount + "（全部使用快取，未消耗 API）", "success");
+    } else {
+      showStatus(I18N[state.lang].done2 + " " + msg, "success");
+    }
+  } else if (failCount > 0 && (okCount + skipCount) > 0) {
+    showStatus(I18N[state.lang].partial + msg, "info");
+  } else if (failCount > 0) {
+    showStatus(I18N[state.lang].err + failCount + " 檔失敗，請按 F12 看 Console", "error");
+  } else {
+    showStatus("請先輸入股票代號", "info");
+  }
 }
-
 function showStatus(msg, type, loading) {
   const el = document.getElementById("status");
   el.className = "status show " + (type||"info");
   el.innerHTML = (loading?'<span class="spinner"></span>':"") + msg;
-  if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 5000);
+  if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 6000);
 }
-
 async function exportPDF() {
   showStatus("Generating PDF...", "info", true);
   try {
@@ -1157,7 +1388,6 @@ async function exportPDF() {
     showStatus("PDF saved!", "success");
   } catch(e) { console.error("PDF error:", e); showStatus("PDF failed: " + e.message, "error"); }
 }
-
 function generateShareLink() {
   const payload = {
     lang:state.lang, currency:state.currency, colorMode:state.colorMode,
@@ -1172,7 +1402,6 @@ function generateShareLink() {
     }).catch(function(){ prompt("Share link:", url); });
   } else { prompt("Share link:", url); }
 }
-
 function init() {
   loadState();
   if (state.rows.length === 0) { for (let i=0; i<10; i++) state.rows.push(makeRow()); }
@@ -1180,7 +1409,6 @@ function init() {
   document.getElementById("currencySelect").value = state.currency;
   document.getElementById("colorSelect").value = state.colorMode;
   applyColorMode(); applyI18n(); renderTable();
-
   document.getElementById("langSelect").addEventListener("change", function(e) {
     state.lang = e.target.value; saveState(); applyI18n(); renderTable();
   });
@@ -1190,7 +1418,8 @@ function init() {
   document.getElementById("colorSelect").addEventListener("change", function(e) {
     state.colorMode = e.target.value; saveState(); applyColorMode(); renderTable();
   });
-  document.getElementById("btnUpdate").addEventListener("click", updateAllPrices);
+  document.getElementById("btnUpdate").addEventListener("click", function(){ updateAllPrices(false); });
+  document.getElementById("btnForceUpdate").addEventListener("click", function(){ updateAllPrices(true); });
   document.getElementById("btnAdd").addEventListener("click", function() {
     state.rows.push(makeRow()); saveState(); renderTable();
   });
