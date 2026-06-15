@@ -137,43 +137,17 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .hint { font-size: 11px; color: #78909c; margin: -8px 0 12px 4px; }
 
-  /* ★ 折線圖區塊 */
-  .chart-section {
-    margin-top: 20px; padding: 24px 32px;
-    background: rgba(0,0,0,0.25); border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-  }
-  .chart-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
-  }
+  .chart-section { margin-top: 20px; padding: 24px 32px; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
   .chart-title { font-size: 17px; font-weight: 700; color: #e8eaf6; }
   .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; }
-  .chart-range-btn {
-    padding: 6px 12px; font-size: 12px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    cursor: pointer; border-radius: 6px; color: #b0bec5;
-  }
-  .chart-range-btn.active {
-    background: linear-gradient(135deg, #5e35b1, #7e57c2);
-    color: #fff; border-color: transparent;
-  }
+  .chart-range-btn { padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 6px; color: #b0bec5; }
+  .chart-range-btn.active { background: linear-gradient(135deg, #5e35b1, #7e57c2); color: #fff; border-color: transparent; }
   .chart-canvas-wrap { position: relative; height: 320px; }
-  .chart-empty {
-    text-align: center; padding: 60px 20px; color: #78909c; font-size: 13px;
-  }
+  .chart-empty { text-align: center; padding: 60px 20px; color: #78909c; font-size: 13px; }
 
-  /* 注意事項區塊 */
-  .notice {
-    margin-top: 24px; padding: 20px 24px;
-    background: rgba(0,0,0,0.18); border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    font-size: 13px; line-height: 1.7; color: #90a4ae;
-  }
-  .notice h3 {
-    color: #e8eaf6; font-size: 15px; font-weight: 700;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
+  .notice { margin-top: 24px; padding: 20px 24px; background: rgba(0,0,0,0.18); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); font-size: 13px; line-height: 1.7; color: #90a4ae; }
+  .notice h3 { color: #e8eaf6; font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .notice ul { list-style: none; padding-left: 0; }
   .notice li { padding: 4px 0; padding-left: 20px; position: relative; }
   .notice li::before { content: "•"; position: absolute; left: 6px; color: #5e35b1; font-weight: bold; }
@@ -185,13 +159,7 @@
 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
   .modal-backdrop.show { display: flex; }
-  .modal {
-    background: #2a2f4f; border-radius: 16px; padding: 24px;
-    width: 90%; max-width: 480px;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
-    border: 1px solid rgba(255,255,255,0.1);
-    max-height: 80vh; display: flex; flex-direction: column;
-  }
+  .modal { background: #2a2f4f; border-radius: 16px; padding: 24px; width: 90%; max-width: 480px; box-shadow: 0 16px 48px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; display: flex; flex-direction: column; }
   .modal h2 { font-size: 18px; margin-bottom: 8px; color: #e8eaf6; display: flex; align-items: center; gap: 8px; }
   .modal p.modal-hint { font-size: 12px; color: #90a4ae; margin-bottom: 16px; }
   .col-list { overflow-y: auto; flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px; }
@@ -290,7 +258,6 @@
     </div>
   </div>
 
-  <!-- ★ 折線圖區塊 -->
   <div class="chart-section">
     <div class="chart-header">
       <div class="chart-title">📈 <span data-i18n="chartTitle">資產走勢</span></div>
@@ -309,7 +276,6 @@
     </div>
   </div>
 
-  <!-- 注意事項區塊 -->
   <div class="notice" id="noticeBox">
     <h3>📌 <span data-i18n="noticeTitle">使用須知</span></h3>
 
@@ -325,7 +291,16 @@
       </ul>
     </div>
 
-    <!-- ★ 圖表注意事項 -->
+    <div class="notice-section">
+      <strong data-i18n="noticePnLTitle">💰 開倉盈虧計算規則</strong>
+      <ul>
+        <li data-i18n="noticePnL1"><strong>開倉盈虧</strong>只計入「<span class="ok">有填成本均價</span>」的股票，未填成本的股票完全不會納入計算。</li>
+        <li data-i18n="noticePnL2">所以您可以只追蹤想觀察盈虧的股票（填成本），其他股票留空成本欄即可，不會被誇大盈虧。</li>
+        <li data-i18n="noticePnL3"><strong>總淨值</strong>則包含所有有持股的股票（不論有沒有填成本）。</li>
+        <li data-i18n="noticePnL4">獲利率% 同樣只看有填成本的股票，公式：(現價 - 成本) ÷ 成本 × 100%。</li>
+      </ul>
+    </div>
+
     <div class="notice-section">
       <strong data-i18n="noticeChartTitle">📈 資產走勢圖（重要！避免誤解）</strong>
       <ul>
@@ -334,9 +309,10 @@
         <li data-i18n="noticeChart3"><span class="warn">⚠️ 不代表真實獲利曲線</span>：折線只反映「目前持股 × 當天股價」的計算結果，<strong>不會考慮歷史買賣紀錄</strong>。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。</li>
         <li data-i18n="noticeChart4"><span class="warn">⚠️ 修改持股 / 成本 / 刪除列</span>：會直接影響後續所有計算，但<strong>過去已記錄的圖表點不會回溯修改</strong>。</li>
         <li data-i18n="noticeChart5"><span class="warn">⚠️ 幣別影響</span>：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。</li>
-        <li data-i18n="noticeChart6">沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。</li>
-        <li data-i18n="noticeChart7">非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。</li>
-        <li data-i18n="noticeChart8">所有歷史紀錄存在您本機瀏覽器中，<span class="warn">換瀏覽器/換裝置/清快取會全部消失</span>，建議定期匯出 Excel 備份。</li>
+        <li data-i18n="noticeChart6"><span class="warn">⚠️ 圖表雙軸範圍不同</span>：左軸（總淨值）和右軸（開倉盈虧）的數值範圍通常不同，圖中兩條線的「相對位置」沒有絕對意義，請看各自軸的刻度比較。</li>
+        <li data-i18n="noticeChart7">沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。</li>
+        <li data-i18n="noticeChart8">非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。</li>
+        <li data-i18n="noticeChart9">所有歷史紀錄存在您本機瀏覽器中，<span class="warn">換瀏覽器/換裝置/清快取會全部消失</span>，建議定期匯出 Excel 備份。</li>
       </ul>
     </div>
 
@@ -367,7 +343,7 @@
         <li data-i18n="noticeUsage1">手機/平板使用 → 善用 <strong>⚙️ 欄位設定</strong> 隱藏不需要的欄位，畫面更精簡。</li>
         <li data-i18n="noticeUsage2">拖曳每列最左邊的 <strong>⋮⋮</strong> 可調整投資組合的顯示順序。</li>
         <li data-i18n="noticeUsage3">拖曳欄位標題可調整欄位左右順序。</li>
-        <li data-i18n="noticeUsage4">成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。</li>
+        <li data-i18n="noticeUsage4">成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」，且不會被計入總開倉盈虧。</li>
         <li data-i18n="noticeUsage5">可切換顯示幣別（TWD/USD），所有金額會自動換算。</li>
         <li data-i18n="noticeUsage6">想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。</li>
       </ul>
@@ -420,15 +396,21 @@ const I18N = {
     noticeUpdate4: "盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。",
     noticeUpdate5: "想強制重抓所有股票（忽略快取），請點右上角的 ⚡ 強制更新 按鈕。",
     noticeUpdate6: "修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。",
+    noticePnLTitle: "💰 開倉盈虧計算規則",
+    noticePnL1: "開倉盈虧只計入「有填成本均價」的股票，未填成本的股票完全不會納入計算。",
+    noticePnL2: "所以您可以只追蹤想觀察盈虧的股票（填成本），其他股票留空成本欄即可，不會被誇大盈虧。",
+    noticePnL3: "總淨值則包含所有有持股的股票（不論有沒有填成本）。",
+    noticePnL4: "獲利率% 同樣只看有填成本的股票，公式：(現價 - 成本) ÷ 成本 × 100%。",
     noticeChartTitle: "📈 資產走勢圖（重要！避免誤解）",
     noticeChart1: "折線圖會在每次按「🔄 更新股價」成功後自動記錄當日總淨值與開倉盈虧，同一天多次更新會以最後一次為準。",
     noticeChart2: "⚠️ 不會回填歷史資料：圖表只能呈現「您開始使用後」的紀錄，無法顯示加入此功能之前的資產走勢。",
     noticeChart3: "⚠️ 不代表真實獲利曲線：折線只反映「目前持股 × 當天股價」的計算結果，不會考慮歷史買賣紀錄。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。",
     noticeChart4: "⚠️ 修改持股 / 成本 / 刪除列：會直接影響後續所有計算，但過去已記錄的圖表點不會回溯修改。",
     noticeChart5: "⚠️ 幣別影響：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。",
-    noticeChart6: "沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。",
-    noticeChart7: "非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。",
-    noticeChart8: "所有歷史紀錄存在您本機瀏覽器中，換瀏覽器/換裝置/清快取會全部消失，建議定期匯出 Excel 備份。",
+    noticeChart6: "⚠️ 圖表雙軸範圍不同：左軸（總淨值）和右軸（開倉盈虧）的數值範圍通常不同，圖中兩條線的「相對位置」沒有絕對意義，請看各自軸的刻度比較。",
+    noticeChart7: "沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。",
+    noticeChart8: "非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。",
+    noticeChart9: "所有歷史紀錄存在您本機瀏覽器中，換瀏覽器/換裝置/清快取會全部消失，建議定期匯出 Excel 備份。",
     noticeDataTitle: "💾 資料儲存",
     noticeData1: "所有資料儲存在「您目前的瀏覽器」中（localStorage），換瀏覽器/換裝置/清快取會消失。",
     noticeData2: "想跨裝置使用 → 點 🔗 分享連結 把連結存入書籤，下次打開即可還原（不含歷史紀錄）。",
@@ -444,7 +426,7 @@ const I18N = {
     noticeUsage1: "手機/平板使用 → 善用 ⚙️ 欄位設定 隱藏不需要的欄位，畫面更精簡。",
     noticeUsage2: "拖曳每列最左邊的 ⋮⋮ 可調整投資組合的顯示順序。",
     noticeUsage3: "拖曳欄位標題可調整欄位左右順序。",
-    noticeUsage4: "成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」。",
+    noticeUsage4: "成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」，且不會被計入總開倉盈虧。",
     noticeUsage5: "可切換顯示幣別（TWD/USD），所有金額會自動換算。",
     noticeUsage6: "想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。",
     excelSheet1: "持股明細", excelSheet2: "歷史資產",
@@ -482,15 +464,21 @@ const I18N = {
     noticeUpdate4: "During market hours, updates fetch real-time prices. After close, only stocks missing today's close price are fetched.",
     noticeUpdate5: "To force-refresh all stocks (ignore cache), click the ⚡ Force Update button.",
     noticeUpdate6: "Editing shares or cost only triggers recalculation, no API call. Feel free to adjust.",
+    noticePnLTitle: "💰 Open P/L Calculation Rule",
+    noticePnL1: "Open P/L only includes stocks with a filled Avg Cost. Stocks without cost are completely excluded from the calculation.",
+    noticePnL2: "You can track only the stocks you want (by filling cost) and leave others empty without inflating the P/L.",
+    noticePnL3: "Total Value includes all held stocks regardless of whether cost is filled.",
+    noticePnL4: "ROI% also only considers stocks with cost. Formula: (Current - Cost) ÷ Cost × 100%.",
     noticeChartTitle: "📈 Asset Chart (Important! Avoid Misreading)",
     noticeChart1: "The chart auto-records today's total value and open P/L after each successful update. Same-day multiple updates will overwrite with the latest one.",
-    noticeChart2: "⚠️ No backfill: The chart only shows records since you started using this feature. Pre-existing history cannot be displayed.",
-    noticeChart3: "⚠️ NOT a true profit curve: The line only reflects 'current holdings × that day's price'. It does NOT account for buy/sell history. If you add new positions today, the chart will look like value 'suddenly spiked', but it's not real gain — it's just a new position added.",
+    noticeChart2: "⚠️ No backfill: The chart only shows records since you started using this feature.",
+    noticeChart3: "⚠️ NOT a true profit curve: The line only reflects 'current holdings × that day's price'. It does NOT account for buy/sell history.",
     noticeChart4: "⚠️ Editing shares/cost or deleting rows directly affects future calculations, but past recorded points are NOT retroactively modified.",
-    noticeChart5: "⚠️ Currency matters: The display currency at the moment of recording is saved. Switching currency later won't change old records. Stick with one currency for consistent tracking.",
-    noticeChart6: "Days with no holdings are skipped. Days with holdings but no cost still record Total Value (Open P/L will show 0).",
-    noticeChart7: "Weekends/holidays will also be recorded if you press Update, so the line may appear to 'extend horizontally' on non-trading days.",
-    noticeChart8: "All history is stored in your browser. Changing browser/device or clearing cache will wipe it all. Regularly export to Excel as backup.",
+    noticeChart5: "⚠️ Currency matters: The display currency at the moment of recording is saved. Stick with one currency for consistent tracking.",
+    noticeChart6: "⚠️ Different axis scales: Left axis (Total Value) and right axis (Open P/L) usually have different ranges. The relative position of the two lines has no absolute meaning; compare each against its own axis.",
+    noticeChart7: "Days with no holdings are skipped. Days with holdings but no cost still record Total Value (Open P/L will show 0).",
+    noticeChart8: "Weekends/holidays will also be recorded if you press Update.",
+    noticeChart9: "All history is stored in your browser. Regularly export to Excel as backup.",
     noticeDataTitle: "💾 Data Storage",
     noticeData1: "All data is stored in your current browser (localStorage). Changing browser/device or clearing cache will lose data.",
     noticeData2: "For cross-device use → click 🔗 Share Link, save it as a bookmark, and open it later to restore (history not included).",
@@ -506,7 +494,7 @@ const I18N = {
     noticeUsage1: "On mobile/tablet → use ⚙️ Columns to hide unwanted columns for cleaner view.",
     noticeUsage2: "Drag ⋮⋮ on each row's left to reorder your portfolio.",
     noticeUsage3: "Drag column headers to reorder columns horizontally.",
-    noticeUsage4: "If cost is empty, Open P/L and ROI% will show '-'.",
+    noticeUsage4: "If cost is empty, Open P/L and ROI% will show '-', and won't be counted in Total Open P/L.",
     noticeUsage5: "Switch display currency (TWD/USD) anytime, all amounts auto-convert.",
     noticeUsage6: "For long-term tracking → press Update once daily after close to keep the chart complete.",
     excelSheet1: "Holdings", excelSheet2: "Asset History",
@@ -542,10 +530,10 @@ let state = {
   lang: "zh", currency: "TWD", colorMode: "tw",
   rows: [], fxRate: null,
   columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS)),
-  history: {}  // ★ 歷史紀錄：{ "2025-11-16": { totalValue, totalPnL, currency } }
+  history: {}
 };
 const STORAGE_KEY = "portfolio_tracker_v1";
-let currentChartRange = "7";  // 預設 7 天
+let currentChartRange = "7";
 let assetChartInstance = null;
 
 function saveState() {
@@ -953,9 +941,11 @@ function updateRowOutputUI(idx) {
   });
 }
 
-// ★ 計算當前總資產（給 summary + history 用）
+// ★ 計算當前總資產（開倉盈虧只算有成本的股票）
 function calcTotals() {
-  let totalCur=0, totalDayPnL=0, totalPrevValue=0, totalCost=0;
+  let totalCur=0, totalDayPnL=0, totalPrevValue=0;
+  let totalCostOnlyForCosted = 0;
+  let totalValueOnlyForCosted = 0;
   let hasPrice=false, hasCost=false, hasShares=false;
   state.rows.forEach(row => {
     const shares = parseFloat(row.shares)||0;
@@ -969,9 +959,18 @@ function calcTotals() {
       totalDayPnL += convertCurrency((price-prev)*shares, rowCurrency, state.currency);
       totalPrevValue += convertCurrency(prev*shares, rowCurrency, state.currency);
     }
-    if (cost>0) { hasCost = true; totalCost += convertCurrency(cost*shares, rowCurrency, state.currency); }
+    if (cost>0) {
+      hasCost = true;
+      totalCostOnlyForCosted += convertCurrency(cost*shares, rowCurrency, state.currency);
+      totalValueOnlyForCosted += convertCurrency(price*shares, rowCurrency, state.currency);
+    }
   });
-  return { totalCur, totalDayPnL, totalPrevValue, totalCost, hasPrice, hasCost, hasShares };
+  return {
+    totalCur, totalDayPnL, totalPrevValue,
+    totalCost: totalCostOnlyForCosted,
+    totalValueForOpenPnL: totalValueOnlyForCosted,
+    hasPrice, hasCost, hasShares
+  };
 }
 
 function renderSummary() {
@@ -990,7 +989,8 @@ function renderSummary() {
   }
   totValEl.textContent = r.hasPrice?fmtNum(r.totalCur,0)+" "+state.currency:"-";
   if (r.hasCost && r.hasPrice) {
-    const openPnL = r.totalCur - r.totalCost;
+    // ★ 只用「有填成本的股票」計算開倉盈虧
+    const openPnL = r.totalValueForOpenPnL - r.totalCost;
     const openPct = r.totalCost>0?openPnL/r.totalCost*100:0;
     totPnLEl.textContent = fmtSigned(openPnL,0)+" "+state.currency+" ("+fmtPct(openPct)+")";
     totPnLEl.className = "summary-value "+colorClass(openPnL);
@@ -1000,16 +1000,15 @@ function renderSummary() {
   fxEl.textContent = state.fxRate?state.fxRate.toFixed(4):"-";
 }
 
-// ★ 記錄今日資產到 history
+// ★ 記錄今日資產（開倉盈虧只算有成本的）
 function recordTodayAssets() {
   const r = calcTotals();
-  // 沒持股不記錄
   if (!r.hasShares || r.totalCur <= 0) {
     console.log("[History] no holdings, skip recording");
     return;
   }
-  const today = new Date().toISOString().slice(0,10);  // YYYY-MM-DD
-  const openPnL = r.hasCost ? (r.totalCur - r.totalCost) : 0;
+  const today = new Date().toISOString().slice(0,10);
+  const openPnL = r.hasCost ? (r.totalValueForOpenPnL - r.totalCost) : 0;
   state.history[today] = {
     totalValue: Math.round(r.totalCur * 100) / 100,
     totalPnL: Math.round(openPnL * 100) / 100,
@@ -1038,7 +1037,6 @@ async function fetchFxRate() {
   state.fxRate = state.fxRate || 32.0;
 }
 
-// 市場收盤時間判斷
 function getTaipeiTime() {
   const now = new Date();
   const fmt = new Intl.DateTimeFormat("en-CA", {
@@ -1270,7 +1268,6 @@ async function updateAllPrices(forceUpdate) {
     await new Promise(r => setTimeout(r, 200));
   }
   saveState();
-  // ★ 記錄今日資產 + 更新圖表
   if (okCount > 0 || skipCount > 0) {
     recordTodayAssets();
     renderChart();
@@ -1299,7 +1296,7 @@ function showStatus(msg, type, loading) {
   if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 6000);
 }
 
-/* ===================== ★ 折線圖 ===================== */
+// ★ 折線圖（雙軸範圍調整，讓兩條線視覺分開）
 function renderChart() {
   const dates = Object.keys(state.history).sort();
   const canvas = document.getElementById("assetChart");
@@ -1314,7 +1311,6 @@ function renderChart() {
   canvas.style.display = "block";
   emptyMsg.style.display = "none";
 
-  // 篩選範圍
   let filteredDates = dates;
   if (currentChartRange !== "all") {
     const days = parseInt(currentChartRange);
@@ -1337,6 +1333,19 @@ function renderChart() {
   const totalValueData = filteredDates.map(d => state.history[d].totalValue);
   const totalPnLData = filteredDates.map(d => state.history[d].totalPnL);
 
+  // ★ 計算雙軸範圍：讓總淨值線在上半部、開倉盈虧線在下半部
+  const tvMin = Math.min.apply(null, totalValueData);
+  const tvMax = Math.max.apply(null, totalValueData);
+  const tvRange = Math.max(tvMax - tvMin, Math.abs(tvMax) * 0.05);
+  const leftMin = tvMin - tvRange * 1.5;
+  const leftMax = tvMax + tvRange * 0.3;
+
+  const pnlMin = Math.min.apply(null, totalPnLData);
+  const pnlMax = Math.max.apply(null, totalPnLData);
+  const pnlRange = Math.max(pnlMax - pnlMin, Math.abs(pnlMax) * 0.05);
+  const rightMin = pnlMin - pnlRange * 0.3;
+  const rightMax = pnlMax + pnlRange * 1.5;
+
   if (assetChartInstance) assetChartInstance.destroy();
   const ctx = canvas.getContext("2d");
   assetChartInstance = new Chart(ctx, {
@@ -1350,7 +1359,7 @@ function renderChart() {
           borderColor: "#7e57c2",
           backgroundColor: "rgba(126,87,194,0.15)",
           borderWidth: 2.5,
-          fill: true,
+          fill: false,
           tension: 0.3,
           pointRadius: 3,
           pointHoverRadius: 6,
@@ -1399,21 +1408,25 @@ function renderChart() {
         },
         y: {
           position: "left",
+          min: leftMin,
+          max: leftMax,
           ticks: {
-            color: "#90a4ae",
+            color: "#7e57c2",
             callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
           },
-          grid: { color: "rgba(255,255,255,0.05)" },
-          title: { display: true, text: state.lang === "zh" ? "總淨值" : "Total Value", color: "#7e57c2" }
+          grid: { color: "rgba(126,87,194,0.08)" },
+          title: { display: true, text: state.lang === "zh" ? "總淨值" : "Total Value", color: "#7e57c2", font: { size: 13, weight: "600" } }
         },
         y1: {
           position: "right",
+          min: rightMin,
+          max: rightMax,
           ticks: {
-            color: "#90a4ae",
+            color: "#ef5350",
             callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
           },
           grid: { drawOnChartArea: false },
-          title: { display: true, text: state.lang === "zh" ? "開倉盈虧" : "Open P/L", color: "#ef5350" }
+          title: { display: true, text: state.lang === "zh" ? "開倉盈虧" : "Open P/L", color: "#ef5350", font: { size: 13, weight: "600" } }
         }
       }
     }
@@ -1431,14 +1444,12 @@ function bindChartControls() {
   });
 }
 
-/* ===================== ★ Excel 匯出 ===================== */
+// Excel 匯出
 function exportExcel() {
   showStatus(I18N[state.lang].excelGenerating, "info", true);
   try {
     const t = I18N[state.lang];
     const wb = XLSX.utils.book_new();
-
-    // Sheet 1: 持股明細
     const headers = [
       t.market, t.symbol, t.shares, t.cost + "(" + state.currency + ")",
       t.price, t.prevClose, t.changePrice, t.changePct,
@@ -1449,65 +1460,40 @@ function exportExcel() {
       if (!row.symbol || !row.market) return;
       const d = computeRowData(row);
       const marketLabel = row.market === "tw" ? t.tw : t.us;
-      const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
       const costInRowCcy = parseFloat(row.cost) || null;
-      // 統一以 row 原始幣別呈現
       dataRows.push([
-        marketLabel,
-        row.symbol,
-        parseFloat(row.shares) || 0,
-        costInRowCcy,
-        d.price,
-        d.prev,
-        d.changePrice,
+        marketLabel, row.symbol, parseFloat(row.shares) || 0, costInRowCcy,
+        d.price, d.prev, d.changePrice,
         d.dayPct != null ? d.dayPct / 100 : null,
-        d.dispDayPnL,
-        d.dispCurVal,
-        d.dispOpenPnL,
+        d.dispDayPnL, d.dispCurVal, d.dispOpenPnL,
         d.roi != null ? d.roi / 100 : null
       ]);
     });
-
     const ws1Data = [headers].concat(dataRows);
     const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
-
-    // 欄寬
     ws1["!cols"] = [
       {wch:8},{wch:12},{wch:12},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},
       {wch:14},{wch:16},{wch:14},{wch:10}
     ];
-
-    // 表頭樣式 + 數字格式
     const headerCells = ["A1","B1","C1","D1","E1","F1","G1","H1","I1","J1","K1","L1"];
     headerCells.forEach(addr => {
       if (!ws1[addr]) return;
       ws1[addr].s = {
         font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
         fill: { fgColor: { rgb: "2D1B4E" } },
-        alignment: { horizontal: "center", vertical: "center" },
-        border: {
-          top: { style: "thin", color: { rgb: "FFFFFF" } },
-          bottom: { style: "thin", color: { rgb: "FFFFFF" } }
-        }
+        alignment: { horizontal: "center", vertical: "center" }
       };
     });
-
-    // 內容格式：數字千分位 + 漲跌色
     const numFmt = "#,##0.00";
     const intFmt = "#,##0";
     const pctFmt = "+0.00%;-0.00%;0.00%";
     const signedFmt = '+#,##0;-#,##0;0';
     for (let r = 1; r < ws1Data.length; r++) {
       const rowNum = r + 1;
-      // C: shares (整數或小數)
       const cellC = "C" + rowNum; if (ws1[cellC]) ws1[cellC].z = numFmt;
-      // D: cost
       const cellD = "D" + rowNum; if (ws1[cellD]) ws1[cellD].z = numFmt;
-      // E: 最新價
       const cellE = "E" + rowNum; if (ws1[cellE]) ws1[cellE].z = numFmt;
-      // F: 昨收
       const cellF = "F" + rowNum; if (ws1[cellF]) ws1[cellF].z = numFmt;
-      // G: 漲跌價
       const cellG = "G" + rowNum;
       if (ws1[cellG]) {
         ws1[cellG].z = signedFmt;
@@ -1517,7 +1503,6 @@ function exportExcel() {
           ws1[cellG].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
         }
       }
-      // H: 漲跌%
       const cellH = "H" + rowNum;
       if (ws1[cellH]) {
         ws1[cellH].z = pctFmt;
@@ -1527,7 +1512,6 @@ function exportExcel() {
           ws1[cellH].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
         }
       }
-      // I: 單日盈虧
       const cellI = "I" + rowNum;
       if (ws1[cellI]) {
         ws1[cellI].z = signedFmt;
@@ -1537,9 +1521,7 @@ function exportExcel() {
           ws1[cellI].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
         }
       }
-      // J: 目前淨值
       const cellJ = "J" + rowNum; if (ws1[cellJ]) ws1[cellJ].z = intFmt;
-      // K: 開倉盈虧
       const cellK = "K" + rowNum;
       if (ws1[cellK]) {
         ws1[cellK].z = signedFmt;
@@ -1549,7 +1531,6 @@ function exportExcel() {
           ws1[cellK].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
         }
       }
-      // L: 獲利率%
       const cellL = "L" + rowNum;
       if (ws1[cellL]) {
         ws1[cellL].z = pctFmt;
@@ -1560,13 +1541,9 @@ function exportExcel() {
         }
       }
     }
-
-    // 凍結首列
     ws1["!freeze"] = { xSplit: 0, ySplit: 1 };
-
     XLSX.utils.book_append_sheet(wb, ws1, t.excelSheet1);
 
-    // Sheet 2: 歷史資產
     const histHeaders = [t.excelCol_date, t.excelCol_totalValue, t.excelCol_totalPnL, t.excelCol_currency];
     const histDates = Object.keys(state.history).sort();
     const histRows = histDates.map(d => {
@@ -1598,7 +1575,6 @@ function exportExcel() {
       }
     }
     ws2["!freeze"] = { xSplit: 0, ySplit: 1 };
-
     XLSX.utils.book_append_sheet(wb, ws2, t.excelSheet2);
 
     const fileName = "portfolio_" + new Date().toISOString().slice(0,10) + ".xlsx";
@@ -1610,7 +1586,6 @@ function exportExcel() {
   }
 }
 
-/* ===================== PDF ===================== */
 async function exportPDF() {
   showStatus("Generating PDF...", "info", true);
   try {
