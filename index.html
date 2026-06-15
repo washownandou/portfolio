@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>投資組合追蹤器 | Portfolio Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -12,7 +13,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
-    background: linear-gradient(135deg, #1a1f3a 0%, #2d1b4e 100%);
+    background: linear-gradient(135deg, #0f1429 0%, #1a1f3a 50%, #2d1b4e 100%);
     color: #e8eaf6; min-height: 100vh; padding: 20px;
   }
   .container {
@@ -22,11 +23,39 @@
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.08);
   }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .header::after {
+    content: ""; position: absolute; bottom: -1px; left: 0;
+    width: 280px; height: 3px;
+    background: linear-gradient(90deg, transparent, #4fc3f7, #ba68c8, #f06292, transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(186,104,200,0.6);
+  }
   .header h1 {
-    font-size: 24px;
-    background: linear-gradient(90deg, #64b5f6, #ba68c8);
+    font-family: "Orbitron", "Rajdhani", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    font-size: 38px; font-weight: 900;
+    background: linear-gradient(120deg, #4fc3f7 0%, #ba68c8 50%, #f06292 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    letter-spacing: 2px;
+    filter: drop-shadow(0 0 16px rgba(186,104,200,0.35));
+    display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  .header h1::before {
+    content: "▌"; -webkit-text-fill-color: #4fc3f7; color: #4fc3f7;
+    font-size: 32px; animation: blink 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px #4fc3f7);
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .header h1 .title-icon {
+    font-size: 32px; -webkit-text-fill-color: initial;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
   }
   .controls-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   select, button, input {
@@ -46,30 +75,19 @@
   }
   input { background: rgba(255,255,255,0.08); }
   select:hover, button:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
-  button { cursor: pointer; font-weight: 500; }
-  .btn-primary { background: linear-gradient(135deg, #4a90e2, #5e35b1); border: none; }
-  .btn-primary:hover { background: linear-gradient(135deg, #5ba0f2, #6e45c1); transform: translateY(-1px); }
-  .btn-success { background: linear-gradient(135deg, #43a047, #2e7d32); border: none; }
-  .btn-warn   { background: linear-gradient(135deg, #fb8c00, #e65100); border: none; }
-  .btn-info   { background: linear-gradient(135deg, #0288d1, #01579b); border: none; }
-  .btn-danger { background: linear-gradient(135deg, #e53935, #b71c1c); border: none; }
-  .btn-secondary { background: linear-gradient(135deg, #546e7a, #37474f); border: none; }
-  .btn-excel { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: none; }
-  .btn-excel:hover { background: linear-gradient(135deg, #388e3c, #2e7d32); }
-  .action-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  button { cursor: pointer; font-weight: 600; }
   .btn-update-main {
-    font-size: 17px !important;
-    font-weight: 800 !important;
+    font-family: "Rajdhani", inherit;
+    font-size: 17px !important; font-weight: 800 !important;
     padding: 14px 28px !important;
-    background: linear-gradient(135deg, #5ba0f2, #7e57c2) !important;
+    background: linear-gradient(135deg, #4a90e2, #7e57c2) !important;
     border: none !important;
     box-shadow: 0 4px 16px rgba(94,53,177,0.5), 0 0 0 0 rgba(186,104,200,0.7);
     letter-spacing: 0.5px;
     animation: pulseUpdate 2.4s ease-in-out infinite;
-    position: relative;
   }
   .btn-update-main:hover {
-    background: linear-gradient(135deg, #6bb0ff, #9575cd) !important;
+    background: linear-gradient(135deg, #5ba0f2, #9575cd) !important;
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 6px 24px rgba(94,53,177,0.7);
     animation: none;
@@ -78,6 +96,24 @@
     0%, 100% { box-shadow: 0 4px 16px rgba(94,53,177,0.5), 0 0 0 0 rgba(186,104,200,0.5); }
     50%      { box-shadow: 0 4px 16px rgba(94,53,177,0.7), 0 0 0 8px rgba(186,104,200,0); }
   }
+  .btn-add { background: linear-gradient(135deg, #26a69a, #00897b); border: none; }
+  .btn-add:hover { background: linear-gradient(135deg, #4db6ac, #00a896); }
+  .btn-settings { background: linear-gradient(135deg, #455a64, #37474f); border: 1px solid rgba(176,190,197,0.3); }
+  .btn-settings:hover { background: linear-gradient(135deg, #546e7a, #455a64); }
+  .btn-export { background: linear-gradient(135deg, #3949ab, #283593); border: none; }
+  .btn-export:hover { background: linear-gradient(135deg, #5c6bc0, #3949ab); }
+  .btn-import { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: none; }
+  .btn-import:hover { background: linear-gradient(135deg, #388e3c, #2e7d32); }
+  .btn-share { background: linear-gradient(135deg, #0097a7, #00838f); border: none; }
+  .btn-share:hover { background: linear-gradient(135deg, #00acc1, #0097a7); }
+  .btn-force { background: linear-gradient(135deg, #fb8c00, #ef6c00); border: none; }
+  .btn-force:hover { background: linear-gradient(135deg, #ff9800, #fb8c00); }
+  .btn-danger { background: linear-gradient(135deg, #c62828, #b71c1c); border: none; }
+  .btn-danger:hover { background: linear-gradient(135deg, #d32f2f, #c62828); }
+  .btn-primary { background: linear-gradient(135deg, #4a90e2, #5e35b1); border: none; }
+  .btn-primary:hover { background: linear-gradient(135deg, #5ba0f2, #6e45c1); }
+  .btn-secondary { background: linear-gradient(135deg, #546e7a, #37474f); border: none; }
+  .action-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
   .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
   table { width: 100%; border-collapse: collapse; min-width: 1300px; table-layout: fixed; }
   th {
@@ -136,16 +172,14 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .hint { font-size: 11px; color: #78909c; margin: -8px 0 12px 4px; }
-
   .chart-section { margin-top: 20px; padding: 24px 32px; background: rgba(0,0,0,0.25); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
   .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
   .chart-title { font-size: 17px; font-weight: 700; color: #e8eaf6; }
   .chart-controls { display: flex; gap: 6px; flex-wrap: wrap; }
   .chart-range-btn { padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 6px; color: #b0bec5; }
   .chart-range-btn.active { background: linear-gradient(135deg, #5e35b1, #7e57c2); color: #fff; border-color: transparent; }
-  .chart-canvas-wrap { position: relative; height: 320px; }
+  .chart-canvas-wrap { position: relative; height: 360px; }
   .chart-empty { text-align: center; padding: 60px 20px; color: #78909c; font-size: 13px; }
-
   .notice { margin-top: 24px; padding: 20px 24px; background: rgba(0,0,0,0.18); border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); font-size: 13px; line-height: 1.7; color: #90a4ae; }
   .notice h3 { color: #e8eaf6; font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
   .notice ul { list-style: none; padding-left: 0; }
@@ -156,7 +190,6 @@
   .notice strong { color: #b39ddb; }
   .notice .warn { color: #ffb74d; }
   .notice .ok { color: #81c784; }
-
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
   .modal-backdrop.show { display: flex; }
   .modal { background: #2a2f4f; border-radius: 16px; padding: 24px; width: 90%; max-width: 480px; box-shadow: 0 16px 48px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); max-height: 80vh; display: flex; flex-direction: column; }
@@ -174,25 +207,28 @@
   .col-item.locked { opacity: 0.5; cursor: not-allowed; }
   .col-item.locked .grip { color: #455a64; }
   .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
-
+  #excelFileInput { display: none; }
   @media (max-width: 900px) {
     .summary-row { grid-template-columns: 1fr; }
     .summary-row .summary-right { text-align: left; }
   }
   @media (max-width: 768px) {
-    .header h1 { font-size: 18px; } body { padding: 10px; } .container { padding: 14px; }
+    .header h1 { font-size: 24px; letter-spacing: 1px; }
+    .header h1::before { font-size: 22px; }
+    .header h1 .title-icon { font-size: 22px; }
+    body { padding: 10px; } .container { padding: 14px; }
     .btn-update-main { font-size: 15px !important; padding: 12px 20px !important; }
     .summary-row .summary-right .summary-value { font-size: 18px; }
     .summary-row.divider .summary-right .summary-value,
     .summary-row.big-row .summary-right .summary-value { font-size: 22px; }
-    .chart-canvas-wrap { height: 240px; }
+    .chart-canvas-wrap { height: 280px; }
   }
 </style>
 </head>
 <body>
 <div class="container" id="app">
   <div class="header">
-    <h1 id="title">📊 投資組合追蹤器</h1>
+    <h1 id="title"><span class="title-icon">📊</span><span id="titleText">投資組合追蹤器</span></h1>
     <div class="controls-top">
       <select id="langSelect">
         <option value="zh">🌐 中文</option>
@@ -209,14 +245,16 @@
     </div>
   </div>
   <div class="action-bar">
-    <button class="btn-primary btn-update-main" id="btnUpdate">🔄 <span data-i18n="update">更新股價</span></button>
-    <button class="btn-success" id="btnAdd">➕ <span data-i18n="addRow">新增列</span></button>
-    <button class="btn-secondary" id="btnColumns">⚙️ <span data-i18n="columns">欄位設定</span></button>
-    <button class="btn-info" id="btnPdf">📄 <span data-i18n="pdf">匯出 PDF</span></button>
-    <button class="btn-excel" id="btnExcel">📊 <span data-i18n="excel">匯出 Excel</span></button>
-    <button class="btn-warn" id="btnShare">🔗 <span data-i18n="share">分享連結</span></button>
+    <button class="btn-update-main" id="btnUpdate">🔄 <span data-i18n="update">更新股價</span></button>
+    <button class="btn-add" id="btnAdd">➕ <span data-i18n="addRow">新增列</span></button>
+    <button class="btn-settings" id="btnColumns">⚙️ <span data-i18n="columns">欄位設定</span></button>
+    <button class="btn-export" id="btnPdf">📄 <span data-i18n="pdf">匯出 PDF</span></button>
+    <button class="btn-export" id="btnExcel">📊 <span data-i18n="excel">匯出 Excel</span></button>
+    <button class="btn-import" id="btnImport">📥 <span data-i18n="importExcel">匯入 Excel</span></button>
+    <button class="btn-share" id="btnShare">🔗 <span data-i18n="share">分享連結</span></button>
+    <button class="btn-force" id="btnForceUpdate" style="font-size:12px;padding:6px 10px;">⚡ <span data-i18n="forceUpdate">強制更新</span></button>
     <button class="btn-danger" id="btnClear">🗑 <span data-i18n="clear">清除全部</span></button>
-    <button class="btn-warn" id="btnForceUpdate" title="忽略快取強制更新所有股票" style="font-size:12px;padding:6px 10px;">⚡ <span data-i18n="forceUpdate">強制更新</span></button>
+    <input type="file" id="excelFileInput" accept=".xlsx,.xls">
   </div>
   <div class="hint" id="dragHint">💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位</div>
   <div id="status" class="status"></div>
@@ -240,15 +278,11 @@
     </div>
     <div class="summary-row divider big-row">
       <span class="summary-left" data-i18n="totalValue">💼 目前總淨值：</span>
-      <span class="summary-right">
-        <span class="summary-value" id="totalValue">-</span>
-      </span>
+      <span class="summary-right"><span class="summary-value" id="totalValue">-</span></span>
     </div>
     <div class="summary-row big-row">
       <span class="summary-left" data-i18n="totalPnL">📈 開倉總盈虧：</span>
-      <span class="summary-right">
-        <span class="summary-value" id="totalPnL">-</span>
-      </span>
+      <span class="summary-right"><span class="summary-value" id="totalPnL">-</span></span>
     </div>
     <div class="summary-row fx-row">
       <span class="summary-right">
@@ -257,7 +291,6 @@
       </span>
     </div>
   </div>
-
   <div class="chart-section">
     <div class="chart-header">
       <div class="chart-title">📈 <span data-i18n="chartTitle">資產走勢</span></div>
@@ -271,14 +304,12 @@
     <div class="chart-canvas-wrap">
       <canvas id="assetChart"></canvas>
       <div class="chart-empty" id="chartEmpty" style="display:none;" data-i18n="chartEmpty">
-        尚無歷史資料。按「🔄 更新股價」成功後會自動記錄當日總資產，至少需要 2 天紀錄才能顯示折線圖。
+        尚無歷史資料。按「🔄 更新股價」成功後會自動記錄當日總資產，至少需要 2 天紀錄才能顯示圖表。
       </div>
     </div>
   </div>
-
   <div class="notice" id="noticeBox">
     <h3>📌 <span data-i18n="noticeTitle">使用須知</span></h3>
-
     <div class="notice-section">
       <strong data-i18n="noticeUpdateTitle">🔄 股價更新機制（智慧快取）</strong>
       <ul>
@@ -286,11 +317,10 @@
         <li data-i18n="noticeUpdate2"><span class="ok">台股交易時間</span>：週一至週五 09:00 ~ 13:30（台北時間），13:30 收盤後當日股價定案。</li>
         <li data-i18n="noticeUpdate3"><span class="ok">美股交易時間</span>：週一至週五 22:30 ~ 翌日 05:00（台北時間，含日光節約調整），收盤後當日股價定案。</li>
         <li data-i18n="noticeUpdate4">盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。</li>
-        <li data-i18n="noticeUpdate5">想強制重抓所有股票（忽略快取），請點右上角的 <strong>⚡ 強制更新</strong> 按鈕。</li>
+        <li data-i18n="noticeUpdate5">想強制重抓所有股票（忽略快取），請點 <strong>⚡ 強制更新</strong> 按鈕。</li>
         <li data-i18n="noticeUpdate6">修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。</li>
       </ul>
     </div>
-
     <div class="notice-section">
       <strong data-i18n="noticePnLTitle">💰 開倉盈虧計算規則</strong>
       <ul>
@@ -300,32 +330,47 @@
         <li data-i18n="noticePnL4">獲利率% 同樣只看有填成本的股票，公式：(現價 - 成本) ÷ 成本 × 100%。</li>
       </ul>
     </div>
-
     <div class="notice-section">
       <strong data-i18n="noticeChartTitle">📈 資產走勢圖（重要！避免誤解）</strong>
       <ul>
-        <li data-i18n="noticeChart1">折線圖會在每次按「🔄 更新股價」<strong>成功後自動記錄</strong>當日總淨值與開倉盈虧，同一天多次更新會以<strong>最後一次</strong>為準。</li>
+        <li data-i18n="noticeChart1">圖表會在每次按「🔄 更新股價」<strong>成功後自動記錄</strong>當日總淨值、開倉盈虧及獲利率%，同一天多次更新會以<strong>最後一次</strong>為準。</li>
+        <li data-i18n="noticeChartType">圖表配置：<strong>柱狀圖</strong>=總淨值（左軸）、<strong>實線</strong>=開倉盈虧金額（右軸 1）、<strong>虛線</strong>=獲利率%（右軸 2）。</li>
         <li data-i18n="noticeChart2"><span class="warn">⚠️ 不會回填歷史資料</span>：圖表只能呈現「您開始使用後」的紀錄，無法顯示加入此功能之前的資產走勢。</li>
-        <li data-i18n="noticeChart3"><span class="warn">⚠️ 不代表真實獲利曲線</span>：折線只反映「目前持股 × 當天股價」的計算結果，<strong>不會考慮歷史買賣紀錄</strong>。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。</li>
+        <li data-i18n="noticeChart3"><span class="warn">⚠️ 不代表真實獲利曲線</span>：圖表只反映「目前持股 × 當天股價」的計算結果，<strong>不會考慮歷史買賣紀錄</strong>。例如今天加入新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。</li>
         <li data-i18n="noticeChart4"><span class="warn">⚠️ 修改持股 / 成本 / 刪除列</span>：會直接影響後續所有計算，但<strong>過去已記錄的圖表點不會回溯修改</strong>。</li>
         <li data-i18n="noticeChart5"><span class="warn">⚠️ 幣別影響</span>：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。</li>
-        <li data-i18n="noticeChart6"><span class="warn">⚠️ 圖表雙軸範圍不同</span>：左軸（總淨值）和右軸（開倉盈虧）的數值範圍通常不同，圖中兩條線的「相對位置」沒有絕對意義，請看各自軸的刻度比較。</li>
-        <li data-i18n="noticeChart7">沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。</li>
-        <li data-i18n="noticeChart8">非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。</li>
-        <li data-i18n="noticeChart9">所有歷史紀錄存在您本機瀏覽器中，<span class="warn">換瀏覽器/換裝置/清快取會全部消失</span>，建議定期匯出 Excel 備份。</li>
+        <li data-i18n="noticeChart6">沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。</li>
+        <li data-i18n="noticeChart7">非交易日（週末、假日）若按更新，當天也會被記錄。</li>
+        <li data-i18n="noticeChart8">所有歷史紀錄存在您本機瀏覽器中，<span class="warn">換瀏覽器/換裝置/清快取會全部消失</span>，建議定期匯出 Excel 備份。</li>
       </ul>
     </div>
-
+    <div class="notice-section">
+      <strong data-i18n="noticeImportTitle">📥 Excel 匯入 / 復原</strong>
+      <ul>
+        <li data-i18n="noticeImport1">支援從本 App 匯出的 Excel 檔案，可用來在<strong>清空快取後復原</strong>所有持股與歷史紀錄。</li>
+        <li data-i18n="noticeImport2"><span class="warn">⚠️ 匯入時會「完全覆蓋」現有資料</span>（包括持股、歷史紀錄、欄位設定），匯入前會跳出確認視窗。</li>
+        <li data-i18n="noticeImport3">Excel 內含三個 Sheet：「持股明細」「歷史資產」「每日匯率」，缺一不可。</li>
+        <li data-i18n="noticeImport4">建議定期（例如每週一次）匯出 Excel 存到雲端硬碟，作為長期備份。</li>
+      </ul>
+    </div>
+    <div class="notice-section">
+      <strong data-i18n="noticeExcelTitle">📊 Excel 匯出規格</strong>
+      <ul>
+        <li data-i18n="noticeExcel1"><strong>持股明細</strong>：每檔股票均同時顯示「原始幣別」「TWD 換算」「USD 換算」三組金額，方便不同幣別觀察。</li>
+        <li data-i18n="noticeExcel2"><strong>歷史資產</strong>：每日總淨值、開倉盈虧（金額/%）、當日 USD/TWD 匯率均一併輸出。</li>
+        <li data-i18n="noticeExcel3"><strong>每日匯率</strong>：另存一張 sheet 記錄每日 USD/TWD 匯率，供日後對帳或復原。</li>
+        <li data-i18n="noticeExcel4">表頭採深紫底白字，數字千分位、漲跌色（紅漲綠跌），凍結首列方便瀏覽。</li>
+      </ul>
+    </div>
     <div class="notice-section">
       <strong data-i18n="noticeDataTitle">💾 資料儲存</strong>
       <ul>
         <li data-i18n="noticeData1">所有資料儲存在「您目前的瀏覽器」中（localStorage），<span class="warn">換瀏覽器/換裝置/清快取會消失</span>。</li>
         <li data-i18n="noticeData2">想跨裝置使用 → 點 <strong>🔗 分享連結</strong> 把連結存入書籤，下次打開即可還原（不含歷史紀錄）。</li>
-        <li data-i18n="noticeData3">想備份歷史紀錄 → 點 <strong>📊 匯出 Excel</strong>，存下檔案。</li>
+        <li data-i18n="noticeData3">想備份完整歷史 → 點 <strong>📊 匯出 Excel</strong>，日後可用 <strong>📥 匯入 Excel</strong> 復原。</li>
         <li data-i18n="noticeData4">分享連結含您的全部持股資料（股數、成本），<span class="warn">請勿貼到公開場合</span>。</li>
       </ul>
     </div>
-
     <div class="notice-section">
       <strong data-i18n="noticeDataSourceTitle">📈 資料來源與限制</strong>
       <ul>
@@ -336,20 +381,7 @@
         <li data-i18n="noticeSource5">USD/TWD 匯率取自 open.er-api.com，每次按更新會自動刷新。</li>
       </ul>
     </div>
-
-    <div class="notice-section">
-      <strong data-i18n="noticeUsageTitle">💡 使用技巧</strong>
-      <ul>
-        <li data-i18n="noticeUsage1">手機/平板使用 → 善用 <strong>⚙️ 欄位設定</strong> 隱藏不需要的欄位，畫面更精簡。</li>
-        <li data-i18n="noticeUsage2">拖曳每列最左邊的 <strong>⋮⋮</strong> 可調整投資組合的顯示順序。</li>
-        <li data-i18n="noticeUsage3">拖曳欄位標題可調整欄位左右順序。</li>
-        <li data-i18n="noticeUsage4">成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」，且不會被計入總開倉盈虧。</li>
-        <li data-i18n="noticeUsage5">可切換顯示幣別（TWD/USD），所有金額會自動換算。</li>
-        <li data-i18n="noticeUsage6">想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。</li>
-      </ul>
-    </div>
   </div>
-
 </div>
 <div class="modal-backdrop" id="colModal">
   <div class="modal">
@@ -362,1328 +394,3 @@
     </div>
   </div>
 </div>
-<script>
-const I18N = {
-  zh: {
-    title: "📊 投資組合追蹤器",
-    update: "更新股價", addRow: "新增列", pdf: "匯出 PDF", excel: "匯出 Excel", share: "分享連結", clear: "清除全部",
-    forceUpdate: "強制更新",
-    columns: "欄位設定", columnSettings: "欄位設定",
-    colModalHint: "拖曳調整順序，勾選顯示／取消勾選隱藏。「拖曳手把」「市場」「股票代號」「刪除」為固定欄位。",
-    reset: "重設預設", done: "完成",
-    market: "市場", symbol: "股票代號", shares: "持有股數", cost: "成本均價(選填)",
-    price: "最新股價", prevClose: "昨收價", changePrice: "漲跌價",
-    changePct: "漲跌%", changeVal: "單日盈虧",
-    currentValue: "目前淨值", openPnL: "開倉盈虧", roi: "獲利率%",
-    dayPnL: "當日總盈虧：", dayPct: "當日漲跌：",
-    totalValue: "💼 目前總淨值：", totalPnL: "📈 開倉總盈虧：",
-    fxRate: "USD/TWD 匯率：",
-    tw: "台股", us: "美股",
-    fetching: "正在更新股價...", done2: "更新完成！", err: "更新失敗：",
-    shareCopied: "分享連結已複製到剪貼簿！",
-    confirmClear: "確定要清除所有資料嗎？",
-    partial: "部分成功：",
-    skipped: "已跳過（快取仍有效）：",
-    dragHint: "💡 提示：拖曳每列最左邊 ⋮⋮ 可調整列順序；拖曳欄位標題可調整欄位順序；點「⚙️ 欄位設定」可隱藏/顯示欄位",
-    chartTitle: "資產走勢", range7: "7 天", range30: "30 天", range90: "90 天", rangeAll: "全部",
-    chartEmpty: "尚無歷史資料。按「🔄 更新股價」成功後會自動記錄當日總資產，至少需要 2 天紀錄才能顯示折線圖。",
-    excelGenerating: "正在產生 Excel...", excelDone: "Excel 已下載！",
-    noticeTitle: "使用須知",
-    noticeUpdateTitle: "🔄 股價更新機制（智慧快取）",
-    noticeUpdate1: "為節省流量，系統會自動判斷各市場「最近一次收盤時間」，已抓過且收盤價未更新的股票會跳過。",
-    noticeUpdate2: "台股交易時間：週一至週五 09:00 ~ 13:30（台北時間），13:30 收盤後當日股價定案。",
-    noticeUpdate3: "美股交易時間：週一至週五 22:30 ~ 翌日 05:00（台北時間，含日光節約調整），收盤後當日股價定案。",
-    noticeUpdate4: "盤中按更新會抓即時最新價；收盤後再按只會抓尚未取得當日收盤價的股票。",
-    noticeUpdate5: "想強制重抓所有股票（忽略快取），請點右上角的 ⚡ 強制更新 按鈕。",
-    noticeUpdate6: "修改持股股數或成本均價時，僅做即時計算，不會觸發 API 抓取，可放心調整。",
-    noticePnLTitle: "💰 開倉盈虧計算規則",
-    noticePnL1: "開倉盈虧只計入「有填成本均價」的股票，未填成本的股票完全不會納入計算。",
-    noticePnL2: "所以您可以只追蹤想觀察盈虧的股票（填成本），其他股票留空成本欄即可，不會被誇大盈虧。",
-    noticePnL3: "總淨值則包含所有有持股的股票（不論有沒有填成本）。",
-    noticePnL4: "獲利率% 同樣只看有填成本的股票，公式：(現價 - 成本) ÷ 成本 × 100%。",
-    noticeChartTitle: "📈 資產走勢圖（重要！避免誤解）",
-    noticeChart1: "折線圖會在每次按「🔄 更新股價」成功後自動記錄當日總淨值與開倉盈虧，同一天多次更新會以最後一次為準。",
-    noticeChart2: "⚠️ 不會回填歷史資料：圖表只能呈現「您開始使用後」的紀錄，無法顯示加入此功能之前的資產走勢。",
-    noticeChart3: "⚠️ 不代表真實獲利曲線：折線只反映「目前持股 × 當天股價」的計算結果，不會考慮歷史買賣紀錄。例如您今天加入了新持股，圖表會看起來淨值「突然暴增」，但這不是您「賺到了」，而是新增了部位。",
-    noticeChart4: "⚠️ 修改持股 / 成本 / 刪除列：會直接影響後續所有計算，但過去已記錄的圖表點不會回溯修改。",
-    noticeChart5: "⚠️ 幣別影響：紀錄當下使用的顯示幣別（TWD/USD）會直接存入，若中途切換幣別，舊資料仍是當時記錄的幣別。建議長期固定用同一種幣別觀察。",
-    noticeChart6: "⚠️ 圖表雙軸範圍不同：左軸（總淨值）和右軸（開倉盈虧）的數值範圍通常不同，圖中兩條線的「相對位置」沒有絕對意義，請看各自軸的刻度比較。",
-    noticeChart7: "沒有持股的日子不會被記錄；有持股但成本未填仍會記錄「總淨值」(開倉盈虧該日會顯示 0)。",
-    noticeChart8: "非交易日（週末、假日）若按更新，當天也會被記錄，因此圖表線可能出現「假日水平延伸」的視覺現象。",
-    noticeChart9: "所有歷史紀錄存在您本機瀏覽器中，換瀏覽器/換裝置/清快取會全部消失，建議定期匯出 Excel 備份。",
-    noticeDataTitle: "💾 資料儲存",
-    noticeData1: "所有資料儲存在「您目前的瀏覽器」中（localStorage），換瀏覽器/換裝置/清快取會消失。",
-    noticeData2: "想跨裝置使用 → 點 🔗 分享連結 把連結存入書籤，下次打開即可還原（不含歷史紀錄）。",
-    noticeData3: "想備份歷史紀錄 → 點 📊 匯出 Excel，存下檔案。",
-    noticeData4: "分享連結含您的全部持股資料（股數、成本），請勿貼到公開場合。",
-    noticeDataSourceTitle: "📈 資料來源與限制",
-    noticeSource1: "股價資料來自 Yahoo Finance，非即時報價，可能有 15~20 分鐘延遲，僅供參考，不構成任何投資建議。",
-    noticeSource2: "台股代號格式：4~6 位數字（如 2330、0050、00713），支援 ETF 含字母結尾（如 00981A）。",
-    noticeSource3: "美股代號格式：1~5 位英文字母（如 AAPL、TSLA、MU）。",
-    noticeSource4: "不支援：興櫃 / 未上市 / 加密貨幣 / 期權期貨 / 港股 / 日股。",
-    noticeSource5: "USD/TWD 匯率取自 open.er-api.com，每次按更新會自動刷新。",
-    noticeUsageTitle: "💡 使用技巧",
-    noticeUsage1: "手機/平板使用 → 善用 ⚙️ 欄位設定 隱藏不需要的欄位，畫面更精簡。",
-    noticeUsage2: "拖曳每列最左邊的 ⋮⋮ 可調整投資組合的顯示順序。",
-    noticeUsage3: "拖曳欄位標題可調整欄位左右順序。",
-    noticeUsage4: "成本均價未填寫時，開倉盈虧與獲利率欄位會顯示「-」，且不會被計入總開倉盈虧。",
-    noticeUsage5: "可切換顯示幣別（TWD/USD），所有金額會自動換算。",
-    noticeUsage6: "想長期追蹤 → 建議每天收盤後按一次「更新股價」，圖表才有完整紀錄。",
-    excelSheet1: "持股明細", excelSheet2: "歷史資產",
-    excelCol_date: "日期", excelCol_totalValue: "總淨值", excelCol_totalPnL: "開倉盈虧", excelCol_currency: "幣別"
-  },
-  en: {
-    title: "📊 Portfolio Tracker",
-    update: "Update Prices", addRow: "Add Row", pdf: "Export PDF", excel: "Export Excel", share: "Share Link", clear: "Clear All",
-    forceUpdate: "Force Update",
-    columns: "Columns", columnSettings: "Column Settings",
-    colModalHint: "Drag to reorder, check/uncheck to show/hide. Drag handle, Market, Symbol and Delete are fixed.",
-    reset: "Reset Default", done: "Done",
-    market: "Market", symbol: "Symbol", shares: "Shares", cost: "Avg Cost (optional)",
-    price: "Latest Price", prevClose: "Prev Close", changePrice: "Chg Price",
-    changePct: "Chg %", changeVal: "Day P/L",
-    currentValue: "Current Value", openPnL: "Open P/L", roi: "ROI %",
-    dayPnL: "Today's P/L: ", dayPct: "Day Change: ",
-    totalValue: "💼 Total Value: ", totalPnL: "📈 Total Open P/L: ",
-    fxRate: "USD/TWD Rate: ",
-    tw: "TW", us: "US",
-    fetching: "Fetching prices...", done2: "Updated!", err: "Error: ",
-    shareCopied: "Share link copied to clipboard!",
-    confirmClear: "Clear all data?",
-    partial: "Partial success: ",
-    skipped: "Skipped (cache still valid): ",
-    dragHint: "💡 Tip: Drag ⋮⋮ to reorder rows; drag column headers to reorder columns; click ⚙️ Columns to show/hide.",
-    chartTitle: "Asset Trend", range7: "7D", range30: "30D", range90: "90D", rangeAll: "All",
-    chartEmpty: "No history yet. After each successful Update, today's total assets will be recorded. At least 2 days of data are needed to draw the chart.",
-    excelGenerating: "Generating Excel...", excelDone: "Excel downloaded!",
-    noticeTitle: "User Guide",
-    noticeUpdateTitle: "🔄 Price Update Mechanism (Smart Cache)",
-    noticeUpdate1: "To save bandwidth, the system auto-checks each market's last close time. Stocks already fetched after the latest close will be skipped.",
-    noticeUpdate2: "TW Market hours: Mon-Fri 09:00 ~ 13:30 (Taipei time). Prices finalize after 13:30 close.",
-    noticeUpdate3: "US Market hours: Mon-Fri 22:30 ~ next day 05:00 (Taipei time, DST-adjusted). Prices finalize after close.",
-    noticeUpdate4: "During market hours, updates fetch real-time prices. After close, only stocks missing today's close price are fetched.",
-    noticeUpdate5: "To force-refresh all stocks (ignore cache), click the ⚡ Force Update button.",
-    noticeUpdate6: "Editing shares or cost only triggers recalculation, no API call. Feel free to adjust.",
-    noticePnLTitle: "💰 Open P/L Calculation Rule",
-    noticePnL1: "Open P/L only includes stocks with a filled Avg Cost. Stocks without cost are completely excluded from the calculation.",
-    noticePnL2: "You can track only the stocks you want (by filling cost) and leave others empty without inflating the P/L.",
-    noticePnL3: "Total Value includes all held stocks regardless of whether cost is filled.",
-    noticePnL4: "ROI% also only considers stocks with cost. Formula: (Current - Cost) ÷ Cost × 100%.",
-    noticeChartTitle: "📈 Asset Chart (Important! Avoid Misreading)",
-    noticeChart1: "The chart auto-records today's total value and open P/L after each successful update. Same-day multiple updates will overwrite with the latest one.",
-    noticeChart2: "⚠️ No backfill: The chart only shows records since you started using this feature.",
-    noticeChart3: "⚠️ NOT a true profit curve: The line only reflects 'current holdings × that day's price'. It does NOT account for buy/sell history.",
-    noticeChart4: "⚠️ Editing shares/cost or deleting rows directly affects future calculations, but past recorded points are NOT retroactively modified.",
-    noticeChart5: "⚠️ Currency matters: The display currency at the moment of recording is saved. Stick with one currency for consistent tracking.",
-    noticeChart6: "⚠️ Different axis scales: Left axis (Total Value) and right axis (Open P/L) usually have different ranges. The relative position of the two lines has no absolute meaning; compare each against its own axis.",
-    noticeChart7: "Days with no holdings are skipped. Days with holdings but no cost still record Total Value (Open P/L will show 0).",
-    noticeChart8: "Weekends/holidays will also be recorded if you press Update.",
-    noticeChart9: "All history is stored in your browser. Regularly export to Excel as backup.",
-    noticeDataTitle: "💾 Data Storage",
-    noticeData1: "All data is stored in your current browser (localStorage). Changing browser/device or clearing cache will lose data.",
-    noticeData2: "For cross-device use → click 🔗 Share Link, save it as a bookmark, and open it later to restore (history not included).",
-    noticeData3: "To backup history → click 📊 Export Excel and save the file.",
-    noticeData4: "Share links contain all your holdings data (shares, cost). Do not paste in public.",
-    noticeDataSourceTitle: "📈 Data Source & Limitations",
-    noticeSource1: "Prices from Yahoo Finance, NOT real-time (15-20 min delay possible). For reference only, not investment advice.",
-    noticeSource2: "TW symbols: 4-6 digits (e.g., 2330, 0050, 00713), with optional letter suffix (e.g., 00981A).",
-    noticeSource3: "US symbols: 1-5 letters (e.g., AAPL, TSLA, MU).",
-    noticeSource4: "Not supported: OTC unlisted / Crypto / Options / Futures / HK stocks / JP stocks.",
-    noticeSource5: "USD/TWD rate from open.er-api.com, auto-refreshed on each update.",
-    noticeUsageTitle: "💡 Tips",
-    noticeUsage1: "On mobile/tablet → use ⚙️ Columns to hide unwanted columns for cleaner view.",
-    noticeUsage2: "Drag ⋮⋮ on each row's left to reorder your portfolio.",
-    noticeUsage3: "Drag column headers to reorder columns horizontally.",
-    noticeUsage4: "If cost is empty, Open P/L and ROI% will show '-', and won't be counted in Total Open P/L.",
-    noticeUsage5: "Switch display currency (TWD/USD) anytime, all amounts auto-convert.",
-    noticeUsage6: "For long-term tracking → press Update once daily after close to keep the chart complete.",
-    excelSheet1: "Holdings", excelSheet2: "Asset History",
-    excelCol_date: "Date", excelCol_totalValue: "Total Value", excelCol_totalPnL: "Open P/L", excelCol_currency: "Currency"
-  }
-};
-
-const COLUMN_DEFS = {
-  drag:        { key: "drag",        i18n: null,           width: "28px", fixed: true,  render: "drag" },
-  market:      { key: "market",      i18n: "market",       width: "70px", fixed: true,  render: "market" },
-  symbol:      { key: "symbol",      i18n: "symbol",       width: "95px", fixed: true,  render: "symbol" },
-  shares:      { key: "shares",      i18n: "shares",       width: "95px", fixed: false, render: "shares" },
-  cost:        { key: "cost",        i18n: "cost",         width: "130px",fixed: false, render: "cost" },
-  price:       { key: "price",       i18n: "price",        width: "auto", fixed: false, render: "price" },
-  prevClose:   { key: "prevClose",   i18n: "prevClose",    width: "auto", fixed: false, render: "prevClose" },
-  changePrice: { key: "changePrice", i18n: "changePrice",  width: "auto", fixed: false, render: "changePrice" },
-  changePct:   { key: "changePct",   i18n: "changePct",    width: "auto", fixed: false, render: "changePct" },
-  changeVal:   { key: "changeVal",   i18n: "changeVal",    width: "auto", fixed: false, render: "changeVal" },
-  currentValue:{ key: "currentValue",i18n: "currentValue", width: "auto", fixed: false, render: "currentValue" },
-  openPnL:     { key: "openPnL",     i18n: "openPnL",      width: "auto", fixed: false, render: "openPnL" },
-  roi:         { key: "roi",         i18n: "roi",          width: "auto", fixed: false, render: "roi" },
-  del:         { key: "del",         i18n: null,           width: "35px", fixed: true,  render: "del" }
-};
-const DEFAULT_COLUMNS = [
-  { key: "drag",         visible: true }, { key: "market", visible: true }, { key: "symbol", visible: true },
-  { key: "shares",       visible: true }, { key: "cost",   visible: true }, { key: "price",  visible: true },
-  { key: "prevClose",    visible: true }, { key: "changePrice", visible: true }, { key: "changePct", visible: true },
-  { key: "changeVal",    visible: true }, { key: "currentValue", visible: true }, { key: "openPnL", visible: true },
-  { key: "roi",          visible: true }, { key: "del",    visible: true }
-];
-
-let state = {
-  lang: "zh", currency: "TWD", colorMode: "tw",
-  rows: [], fxRate: null,
-  columns: JSON.parse(JSON.stringify(DEFAULT_COLUMNS)),
-  history: {}
-};
-const STORAGE_KEY = "portfolio_tracker_v1";
-let currentChartRange = "7";
-let assetChartInstance = null;
-
-function saveState() {
-  const toSave = {
-    lang: state.lang, currency: state.currency, colorMode: state.colorMode,
-    rows: state.rows, columns: state.columns, history: state.history
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-}
-function loadState() {
-  const hash = window.location.hash;
-  if (hash.startsWith("#data=")) {
-    try {
-      const decoded = JSON.parse(decodeURIComponent(escape(atob(hash.slice(6)))));
-      Object.assign(state, decoded);
-    } catch (e) { console.warn("Bad share link", e); }
-  } else {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { try { Object.assign(state, JSON.parse(raw)); } catch(e){} }
-  }
-  if (!state.columns || !Array.isArray(state.columns)) {
-    state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
-  } else {
-    const existingKeys = state.columns.map(c => c.key);
-    DEFAULT_COLUMNS.forEach(def => {
-      if (!existingKeys.includes(def.key)) state.columns.push({ key: def.key, visible: true });
-    });
-    state.columns = state.columns.filter(c => COLUMN_DEFS[c.key]);
-  }
-  if (!state.history || typeof state.history !== "object") state.history = {};
-}
-function detectMarket(symbol) {
-  if (!symbol) return "";
-  const s = symbol.trim().toUpperCase();
-  if (/^\d{4,6}[A-Z]?$/.test(s)) return "tw";
-  if (/^[A-Z]{1,5}$/.test(s)) return "us";
-  return "";
-}
-function fmtNum(n, d) { if(d==null)d=2; if(n==null||isNaN(n))return"-"; return Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
-function fmtPct(n) { if(n==null||isNaN(n))return"-"; return (n>=0?"+":"")+n.toFixed(2)+"%"; }
-function fmtSigned(n, d) { if(d==null)d=2; if(n==null||isNaN(n))return"-"; return (n>=0?"+":"")+fmtNum(n,d); }
-function colorClass(n) { if(n==null||isNaN(n)||n===0)return"flat"; return n>0?"up":"down"; }
-function applyColorMode() {
-  const root = document.documentElement;
-  if (state.colorMode === "tw") {
-    root.style.setProperty("--up-color", "#ef5350"); root.style.setProperty("--down-color", "#26a69a");
-  } else {
-    root.style.setProperty("--up-color", "#26a69a"); root.style.setProperty("--down-color", "#ef5350");
-  }
-}
-function applyI18n() {
-  const t = I18N[state.lang];
-  document.getElementById("title").textContent = t.title;
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const k = el.getAttribute("data-i18n");
-    if (t[k]) el.textContent = t[k];
-  });
-  document.getElementById("dragHint").textContent = t.dragHint;
-}
-function makeRow(d) {
-  d = d || {};
-  return { market:d.market||"", symbol:d.symbol||"", shares:d.shares||"", cost:d.cost||"",
-    price:d.price!=null?d.price:null, prevClose:d.prevClose!=null?d.prevClose:null,
-    currency:d.currency||"", error:d.error||null,
-    lastFetchAt: d.lastFetchAt || null };
-}
-function getVisibleColumns() {
-  return state.columns.filter(c => c.visible).map(c => COLUMN_DEFS[c.key]).filter(Boolean);
-}
-function computeRowData(row) {
-  const shares = parseFloat(row.shares)||0;
-  const cost = parseFloat(row.cost)||0;
-  const price = row.price, prev = row.prevClose;
-  let dayPct=null, dayPnL=null, changePrice=null, curValOrig=null, openPnL=null, roi=null;
-  if (price!==null && !isNaN(price)) {
-    if (prev && prev>0) {
-      changePrice = price - prev;
-      dayPct = changePrice / prev * 100;
-      dayPnL = changePrice * shares;
-    }
-    curValOrig = price * shares;
-    if (cost>0) {
-      openPnL = (price-cost)*shares;
-      roi = (price - cost) / cost * 100;
-    }
-  }
-  const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
-  const toDisp = function(v) { return v==null||isNaN(v)?null:convertCurrency(v, rowCurrency, state.currency); };
-  return {
-    shares, cost, price, prev, dayPct, dayPnL, changePrice, curValOrig, openPnL, roi,
-    rowCurrency,
-    dispDayPnL: toDisp(dayPnL),
-    dispCurVal: toDisp(curValOrig),
-    dispOpenPnL: toDisp(openPnL)
-  };
-}
-function renderCell(col, row, idx, data) {
-  const td = document.createElement("td");
-  const t = I18N[state.lang];
-  switch(col.render) {
-    case "drag": td.innerHTML = '<span class="drag-handle" title="拖曳排序">⋮⋮</span>'; break;
-    case "market":
-      td.innerHTML = '<select class="market-select" data-idx="'+idx+'" data-field="market">'+
-        '<option value="tw"'+(row.market==="tw"?" selected":"")+'>'+t.tw+'</option>'+
-        '<option value="us"'+(row.market==="us"?" selected":"")+'>'+t.us+'</option></select>'; break;
-    case "symbol":
-      td.innerHTML = '<input type="text" data-idx="'+idx+'" data-field="symbol" value="'+row.symbol+'" placeholder="2330 / AAPL" style="text-transform:uppercase">'; break;
-    case "shares":
-      td.innerHTML = '<input type="number" class="num" data-idx="'+idx+'" data-field="shares" value="'+row.shares+'" placeholder="0" min="0" step="any">'; break;
-    case "cost":
-      const rowCurrencyLabel = row.market === "us" ? "USD" : (row.market === "tw" ? "TWD" : "");
-      td.innerHTML = '<div class="cost-wrap">'+
-        '<input type="number" class="num" data-idx="'+idx+'" data-field="cost" value="'+row.cost+'" placeholder="-" min="0" step="any">'+
-        '<span class="cost-currency" data-cost-currency="'+idx+'">'+rowCurrencyLabel+'</span>'+
-        '</div>'; break;
-    case "price":
-      td.className = "col-output";
-      if (row.error) {
-        td.innerHTML = '<span style="color:#ef5350;font-size:11px" title="'+row.error+'">⚠ '+row.error.slice(0,18)+'</span>';
-      } else {
-        td.textContent = data.price!==null ? fmtNum(data.price,2)+" "+data.rowCurrency : "-";
-      } break;
-    case "prevClose":
-      td.className = "col-output flat";
-      td.textContent = data.prev!==null && !isNaN(data.prev) ? fmtNum(data.prev,2) : "-"; break;
-    case "changePrice":
-      td.className = "col-output " + colorClass(data.changePrice);
-      td.textContent = fmtSigned(data.changePrice, 2); break;
-    case "changePct":
-      td.className = "col-output " + colorClass(data.dayPct);
-      td.textContent = fmtPct(data.dayPct); break;
-    case "changeVal":
-      td.className = "col-output " + colorClass(data.dispDayPnL);
-      td.textContent = fmtSigned(data.dispDayPnL,0); break;
-    case "currentValue":
-      td.className = "col-output";
-      td.textContent = data.dispCurVal!==null?fmtNum(data.dispCurVal,0):"-"; break;
-    case "openPnL":
-      td.className = "col-output " + colorClass(data.dispOpenPnL);
-      td.textContent = data.dispOpenPnL!==null?fmtSigned(data.dispOpenPnL,0):"-"; break;
-    case "roi":
-      td.className = "col-output " + colorClass(data.roi);
-      td.textContent = fmtPct(data.roi); break;
-    case "del":
-      td.innerHTML = '<button class="del-btn" data-idx="'+idx+'">✕</button>'; break;
-  }
-  return td;
-}
-function renderTable() {
-  const cols = getVisibleColumns();
-  const t = I18N[state.lang];
-  const colgroup = document.getElementById("tableColgroup");
-  colgroup.innerHTML = "";
-  cols.forEach(col => {
-    const c = document.createElement("col");
-    if (col.width && col.width !== "auto") c.style.width = col.width;
-    colgroup.appendChild(c);
-  });
-  const thead = document.getElementById("tableHead");
-  thead.innerHTML = "";
-  cols.forEach(col => {
-    const th = document.createElement("th");
-    th.setAttribute("data-colkey", col.key);
-    if (col.i18n && t[col.i18n]) {
-      if (!col.fixed) {
-        th.classList.add("draggable-col");
-        th.setAttribute("draggable", "true");
-        th.innerHTML = '<span class="col-grip">⋮⋮</span>' + t[col.i18n];
-      } else { th.textContent = t[col.i18n]; }
-    } else { th.textContent = col.key === "del" ? "✕" : ""; }
-    thead.appendChild(th);
-  });
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-  state.rows.forEach((row, idx) => {
-    const tr = document.createElement("tr");
-    tr.className = "row-item";
-    tr.setAttribute("draggable", "true");
-    tr.setAttribute("data-idx", idx);
-    const data = computeRowData(row);
-    cols.forEach(col => { tr.appendChild(renderCell(col, row, idx, data)); });
-    tbody.appendChild(tr);
-  });
-  tbody.querySelectorAll("input, select").forEach(el => {
-    el.addEventListener("change", onCellChange);
-    el.addEventListener("input", onCellChange);
-  });
-  tbody.querySelectorAll("input, select, button").forEach(el => {
-    el.addEventListener("mousedown", function(e) { e.stopPropagation(); });
-    el.setAttribute("draggable", "false");
-  });
-  tbody.querySelectorAll(".del-btn").forEach(b => {
-    b.addEventListener("click", function() {
-      state.rows.splice(parseInt(b.dataset.idx),1);
-      saveState(); renderTable();
-    });
-  });
-  bindRowDragEvents(tbody);
-  bindColumnDragEvents(thead);
-  renderSummary();
-}
-let dragSrcIdx = null;
-function bindRowDragEvents(tbody) {
-  const rows = tbody.querySelectorAll("tr.row-item");
-  rows.forEach(tr => {
-    tr.addEventListener("dragstart", function(e) {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "BUTTON") {
-        e.preventDefault(); return;
-      }
-      dragSrcIdx = parseInt(tr.getAttribute("data-idx"));
-      tr.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-      try { e.dataTransfer.setData("text/plain", "row:"+dragSrcIdx); } catch(_) {}
-    });
-    tr.addEventListener("dragend", function() {
-      tr.classList.remove("dragging");
-      tbody.querySelectorAll(".drag-over").forEach(r => r.classList.remove("drag-over"));
-      dragSrcIdx = null;
-    });
-    tr.addEventListener("dragover", function(e) {
-      if (dragSrcIdx === null) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      tbody.querySelectorAll(".drag-over").forEach(r => r.classList.remove("drag-over"));
-      tr.classList.add("drag-over");
-    });
-    tr.addEventListener("dragleave", function() { tr.classList.remove("drag-over"); });
-    tr.addEventListener("drop", function(e) {
-      if (dragSrcIdx === null) return;
-      e.preventDefault();
-      const targetIdx = parseInt(tr.getAttribute("data-idx"));
-      if (dragSrcIdx === targetIdx) return;
-      const moved = state.rows.splice(dragSrcIdx, 1)[0];
-      state.rows.splice(targetIdx, 0, moved);
-      saveState(); renderTable();
-    });
-  });
-}
-let dragColKey = null;
-function bindColumnDragEvents(thead) {
-  const ths = thead.querySelectorAll("th.draggable-col");
-  ths.forEach(th => {
-    th.addEventListener("dragstart", function(e) {
-      dragColKey = th.getAttribute("data-colkey");
-      th.classList.add("col-dragging");
-      e.dataTransfer.effectAllowed = "move";
-      try { e.dataTransfer.setData("text/plain", "col:"+dragColKey); } catch(_) {}
-    });
-    th.addEventListener("dragend", function() {
-      th.classList.remove("col-dragging");
-      thead.querySelectorAll(".col-drag-over").forEach(t => t.classList.remove("col-drag-over"));
-      dragColKey = null;
-    });
-    th.addEventListener("dragover", function(e) {
-      if (!dragColKey) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      thead.querySelectorAll(".col-drag-over").forEach(t => t.classList.remove("col-drag-over"));
-      th.classList.add("col-drag-over");
-    });
-    th.addEventListener("dragleave", function() { th.classList.remove("col-drag-over"); });
-    th.addEventListener("drop", function(e) {
-      if (!dragColKey) return;
-      e.preventDefault();
-      const targetKey = th.getAttribute("data-colkey");
-      if (dragColKey === targetKey) return;
-      moveColumn(dragColKey, targetKey);
-      saveState(); renderTable();
-    });
-  });
-}
-function moveColumn(srcKey, targetKey) {
-  const srcIdx = state.columns.findIndex(c => c.key === srcKey);
-  if (srcIdx < 0) return;
-  const moved = state.columns.splice(srcIdx, 1)[0];
-  const newTargetIdx = state.columns.findIndex(c => c.key === targetKey);
-  if (newTargetIdx < 0) state.columns.push(moved);
-  else state.columns.splice(newTargetIdx, 0, moved);
-}
-function openColModal() { renderColList(); document.getElementById("colModal").classList.add("show"); }
-function closeColModal() { document.getElementById("colModal").classList.remove("show"); }
-function renderColList() {
-  const t = I18N[state.lang];
-  const list = document.getElementById("colList");
-  list.innerHTML = "";
-  state.columns.forEach((col, idx) => {
-    const def = COLUMN_DEFS[col.key];
-    if (!def) return;
-    const labelText = def.i18n ? t[def.i18n] : (col.key === "drag" ? "↕ (拖曳手把)" : (col.key === "del" ? "✕ (刪除)" : col.key));
-    const div = document.createElement("div");
-    div.className = "col-item" + (def.fixed ? " locked" : "");
-    div.setAttribute("data-colkey", col.key);
-    if (!def.fixed) div.setAttribute("draggable", "true");
-    div.innerHTML =
-      '<span class="grip">⋮⋮</span>'+
-      '<input type="checkbox" '+(col.visible?"checked":"")+(def.fixed?" disabled":"")+' data-colkey="'+col.key+'">'+
-      '<span class="col-name">'+labelText+'</span>'+
-      (def.fixed ? '<span style="font-size:10px;color:#78909c;">🔒</span>' : '');
-    list.appendChild(div);
-  });
-  list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.addEventListener("change", function() {
-      const key = cb.getAttribute("data-colkey");
-      const col = state.columns.find(c => c.key === key);
-      if (col) { col.visible = cb.checked; saveState(); renderTable(); }
-    });
-  });
-  let modalDragKey = null;
-  list.querySelectorAll(".col-item").forEach(item => {
-    if (item.classList.contains("locked")) return;
-    item.addEventListener("dragstart", function(e) {
-      modalDragKey = item.getAttribute("data-colkey");
-      item.classList.add("dragging"); e.dataTransfer.effectAllowed = "move";
-    });
-    item.addEventListener("dragend", function() {
-      item.classList.remove("dragging");
-      list.querySelectorAll(".drag-over").forEach(i => i.classList.remove("drag-over"));
-      modalDragKey = null;
-    });
-    item.addEventListener("dragover", function(e) {
-      if (!modalDragKey) return;
-      e.preventDefault();
-      list.querySelectorAll(".drag-over").forEach(i => i.classList.remove("drag-over"));
-      item.classList.add("drag-over");
-    });
-    item.addEventListener("dragleave", function() { item.classList.remove("drag-over"); });
-    item.addEventListener("drop", function(e) {
-      if (!modalDragKey) return;
-      e.preventDefault();
-      const targetKey = item.getAttribute("data-colkey");
-      if (modalDragKey === targetKey) return;
-      moveColumn(modalDragKey, targetKey);
-      saveState(); renderColList(); renderTable();
-    });
-  });
-}
-function resetColumns() {
-  state.columns = JSON.parse(JSON.stringify(DEFAULT_COLUMNS));
-  saveState(); renderColList(); renderTable();
-}
-function onCellChange(e) {
-  const idx = parseInt(e.target.dataset.idx);
-  const field = e.target.dataset.field;
-  let v = e.target.value;
-  if (field === "symbol") {
-    const upperV = v.toUpperCase();
-    if (v !== upperV) {
-      const pos = e.target.selectionStart;
-      e.target.value = upperV;
-      try { e.target.setSelectionRange(pos, pos); } catch(_) {}
-      v = upperV;
-    }
-    state.rows[idx].symbol = v;
-    const m = detectMarket(v);
-    if (m && state.rows[idx].market !== m) {
-      state.rows[idx].market = m;
-      updateRowMarketUI(idx);
-    }
-    state.rows[idx].error = null;
-  } else if (field === "market") {
-    state.rows[idx].market = v;
-    updateRowMarketUI(idx);
-  } else {
-    state.rows[idx][field] = v;
-  }
-  scheduleSave();
-  if (field==="shares" || field==="cost") {
-    updateRowOutputUI(idx);
-    renderSummary();
-  }
-}
-let saveTimer = null;
-function scheduleSave() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(function(){ saveState(); saveTimer = null; }, 250);
-}
-function updateRowMarketUI(idx) {
-  const tbody = document.getElementById("tableBody");
-  if (!tbody) return;
-  const marketSel = tbody.querySelector('select[data-idx="'+idx+'"][data-field="market"]');
-  if (marketSel) marketSel.value = state.rows[idx].market || "";
-  const costLabel = tbody.querySelector('[data-cost-currency="'+idx+'"]');
-  if (costLabel) {
-    const m = state.rows[idx].market;
-    costLabel.textContent = m === "us" ? "USD" : (m === "tw" ? "TWD" : "");
-  }
-}
-function updateRowOutputUI(idx) {
-  const tbody = document.getElementById("tableBody");
-  if (!tbody) return;
-  const tr = tbody.querySelector('tr[data-idx="'+idx+'"]');
-  if (!tr) return;
-  const row = state.rows[idx];
-  const data = computeRowData(row);
-  const cols = getVisibleColumns();
-  const tds = tr.querySelectorAll("td");
-  cols.forEach((col, i) => {
-    const td = tds[i];
-    if (!td) return;
-    if (["price","prevClose","changePrice","changePct","changeVal","currentValue","openPnL","roi"].indexOf(col.render) >= 0) {
-      const newTd = renderCell(col, row, idx, data);
-      td.className = newTd.className;
-      td.innerHTML = newTd.innerHTML;
-    }
-  });
-}
-
-// ★ 計算當前總資產（開倉盈虧只算有成本的股票）
-function calcTotals() {
-  let totalCur=0, totalDayPnL=0, totalPrevValue=0;
-  let totalCostOnlyForCosted = 0;
-  let totalValueOnlyForCosted = 0;
-  let hasPrice=false, hasCost=false, hasShares=false;
-  state.rows.forEach(row => {
-    const shares = parseFloat(row.shares)||0;
-    const cost = parseFloat(row.cost)||0;
-    const price = row.price, prev = row.prevClose;
-    if (!shares || price===null || isNaN(price)) return;
-    hasPrice = true; hasShares = true;
-    const rowCurrency = row.currency || (row.market==="us"?"USD":"TWD");
-    totalCur += convertCurrency(price*shares, rowCurrency, state.currency);
-    if (prev && prev>0) {
-      totalDayPnL += convertCurrency((price-prev)*shares, rowCurrency, state.currency);
-      totalPrevValue += convertCurrency(prev*shares, rowCurrency, state.currency);
-    }
-    if (cost>0) {
-      hasCost = true;
-      totalCostOnlyForCosted += convertCurrency(cost*shares, rowCurrency, state.currency);
-      totalValueOnlyForCosted += convertCurrency(price*shares, rowCurrency, state.currency);
-    }
-  });
-  return {
-    totalCur, totalDayPnL, totalPrevValue,
-    totalCost: totalCostOnlyForCosted,
-    totalValueForOpenPnL: totalValueOnlyForCosted,
-    hasPrice, hasCost, hasShares
-  };
-}
-
-function renderSummary() {
-  const r = calcTotals();
-  document.getElementById("todayDate").textContent = new Date().toISOString().slice(0,10);
-  const dayPctEl=document.getElementById("dayPct"), dayPnLEl=document.getElementById("dayPnL");
-  const totValEl=document.getElementById("totalValue"), totPnLEl=document.getElementById("totalPnL");
-  const fxEl=document.getElementById("fxRate");
-  if (r.hasPrice && r.totalPrevValue>0) {
-    const pct = r.totalDayPnL/r.totalPrevValue*100;
-    dayPctEl.textContent = fmtPct(pct); dayPctEl.className = "summary-value "+colorClass(pct);
-    dayPnLEl.textContent = fmtSigned(r.totalDayPnL,0)+" "+state.currency; dayPnLEl.className = "summary-value "+colorClass(r.totalDayPnL);
-  } else {
-    dayPctEl.textContent="-"; dayPnLEl.textContent="-";
-    dayPctEl.className="summary-value flat"; dayPnLEl.className="summary-value flat";
-  }
-  totValEl.textContent = r.hasPrice?fmtNum(r.totalCur,0)+" "+state.currency:"-";
-  if (r.hasCost && r.hasPrice) {
-    // ★ 只用「有填成本的股票」計算開倉盈虧
-    const openPnL = r.totalValueForOpenPnL - r.totalCost;
-    const openPct = r.totalCost>0?openPnL/r.totalCost*100:0;
-    totPnLEl.textContent = fmtSigned(openPnL,0)+" "+state.currency+" ("+fmtPct(openPct)+")";
-    totPnLEl.className = "summary-value "+colorClass(openPnL);
-  } else {
-    totPnLEl.textContent="-"; totPnLEl.className="summary-value flat";
-  }
-  fxEl.textContent = state.fxRate?state.fxRate.toFixed(4):"-";
-}
-
-// ★ 記錄今日資產（開倉盈虧只算有成本的）
-function recordTodayAssets() {
-  const r = calcTotals();
-  if (!r.hasShares || r.totalCur <= 0) {
-    console.log("[History] no holdings, skip recording");
-    return;
-  }
-  const today = new Date().toISOString().slice(0,10);
-  const openPnL = r.hasCost ? (r.totalValueForOpenPnL - r.totalCost) : 0;
-  state.history[today] = {
-    totalValue: Math.round(r.totalCur * 100) / 100,
-    totalPnL: Math.round(openPnL * 100) / 100,
-    currency: state.currency
-  };
-  console.log("[History] Recorded " + today + ":", state.history[today]);
-  saveState();
-}
-
-function convertCurrency(val, from, to) {
-  if (from===to) return val;
-  if (!state.fxRate) return val;
-  if (from==="USD"&&to==="TWD") return val*state.fxRate;
-  if (from==="TWD"&&to==="USD") return val/state.fxRate;
-  return val;
-}
-async function fetchFxRate() {
-  try {
-    const res = await fetch("https://open.er-api.com/v6/latest/USD");
-    const json = await res.json();
-    if (json && json.rates && json.rates.TWD) {
-      state.fxRate = json.rates.TWD;
-      console.log("[FX] USD/TWD =", state.fxRate); return;
-    }
-  } catch(e) { console.warn("[FX] Failed", e); }
-  state.fxRate = state.fxRate || 32.0;
-}
-
-function getTaipeiTime() {
-  const now = new Date();
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Taipei",
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false
-  });
-  const parts = {};
-  fmt.formatToParts(now).forEach(p => { parts[p.type] = p.value; });
-  return {
-    year: parseInt(parts.year),
-    month: parseInt(parts.month),
-    day: parseInt(parts.day),
-    hour: parseInt(parts.hour === "24" ? "0" : parts.hour),
-    minute: parseInt(parts.minute),
-    weekday: new Date(parts.year + "-" + parts.month + "-" + parts.day + "T12:00:00").getDay()
-  };
-}
-function shiftDate(dateObj, days) {
-  const d = new Date(dateObj.year, dateObj.month-1, dateObj.day);
-  d.setDate(d.getDate() + days);
-  return { year: d.getFullYear(), month: d.getMonth()+1, day: d.getDate(), weekday: d.getDay() };
-}
-function taipeiToTimestamp(y, m, d, h, min) {
-  const utcMs = Date.UTC(y, m-1, d, h, min, 0);
-  return utcMs - 8 * 3600 * 1000;
-}
-function getLastCloseTW() {
-  const t = getTaipeiTime();
-  let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
-  const todayClosed = (t.weekday >= 1 && t.weekday <= 5) && (t.hour > 13 || (t.hour === 13 && t.minute >= 30));
-  if (todayClosed) return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
-  for (let i=1; i<=7; i++) {
-    candidate = shiftDate(candidate, -1);
-    if (candidate.weekday >= 1 && candidate.weekday <= 5) {
-      return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 13, 30);
-    }
-  }
-  return Date.now();
-}
-function getLastCloseUS() {
-  const t = getTaipeiTime();
-  let candidate = { year: t.year, month: t.month, day: t.day, weekday: t.weekday };
-  const todayClosed = (t.hour > 5 || (t.hour === 5 && t.minute > 0));
-  function isValidCloseDayTW(weekday) { return weekday >= 2 && weekday <= 6; }
-  if (todayClosed && isValidCloseDayTW(candidate.weekday)) {
-    return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 5, 0);
-  }
-  for (let i=1; i<=10; i++) {
-    candidate = shiftDate(candidate, -1);
-    if (isValidCloseDayTW(candidate.weekday)) {
-      return taipeiToTimestamp(candidate.year, candidate.month, candidate.day, 5, 0);
-    }
-  }
-  return Date.now();
-}
-function shouldFetch(row, forceUpdate) {
-  if (forceUpdate) return true;
-  if (!row.price || !row.lastFetchAt) return true;
-  const lastClose = row.market === "tw" ? getLastCloseTW() : getLastCloseUS();
-  if (row.lastFetchAt < lastClose) return true;
-  return false;
-}
-
-async function fetchWithTimeout(url, opts, timeout) {
-  timeout = timeout || 15000;
-  const controller = new AbortController();
-  const id = setTimeout(function(){ controller.abort(); }, timeout);
-  try {
-    const res = await fetch(url, Object.assign({}, opts||{}, { signal: controller.signal }));
-    clearTimeout(id); return res;
-  } catch(e) { clearTimeout(id); throw e; }
-}
-const PROXIES = [
-  { name: "myWorker",    build: u => "https://stock-proxy.washownandou.workers.dev/?url=" + encodeURIComponent(u) },
-  { name: "allorigins",  build: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u) },
-  { name: "corsproxy.io",build: u => "https://corsproxy.io/?" + encodeURIComponent(u) },
-  { name: "codetabs",    build: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u) },
-  { name: "thingproxy",  build: u => "https://thingproxy.freeboard.io/fetch/" + u },
-  { name: "cors.sh",     build: u => "https://proxy.cors.sh/" + u }
-];
-let lastGoodProxyIdx = 0;
-async function fetchViaProxy(url, asJson) {
-  const order = [];
-  for (let i=0; i<PROXIES.length; i++) order.push((lastGoodProxyIdx + i) % PROXIES.length);
-  let lastErr = null;
-  for (const idx of order) {
-    const proxy = PROXIES[idx];
-    const purl = proxy.build(url);
-    try {
-      const res = await fetchWithTimeout(purl, {
-        headers: { "Accept": "application/json, text/plain, " + "*" + "/" + "*" }
-      }, 12000);
-      if (!res.ok) { lastErr = new Error("HTTP " + res.status); console.warn("  [" + proxy.name + "] HTTP " + res.status); continue; }
-      const text = await res.text();
-      if (!text || text.length < 5) { lastErr = new Error("Empty"); continue; }
-      if (text.trim().toLowerCase().startsWith("<")) { lastErr = new Error("HTML response"); console.warn("  [" + proxy.name + "] got HTML, skip"); continue; }
-      if (asJson) {
-        try {
-          const json = JSON.parse(text);
-          lastGoodProxyIdx = idx;
-          console.log("  [" + proxy.name + "] ✓");
-          return json;
-        } catch(e) { lastErr = new Error("Bad JSON"); continue; }
-      }
-      lastGoodProxyIdx = idx; return text;
-    } catch(e) { lastErr = e; console.warn("  [" + proxy.name + "] " + e.message); }
-  }
-  throw lastErr || new Error("All proxies failed");
-}
-function parseYahooResult(result) {
-  const meta = result.meta;
-  const quote = result.indicators && result.indicators.quote && result.indicators.quote[0];
-  const closes = quote && quote.close ? quote.close : [];
-  const pairs = [];
-  for (let i=0; i<closes.length; i++) {
-    if (closes[i] != null && !isNaN(closes[i])) pairs.push({ close: closes[i] });
-  }
-  let price = meta.regularMarketPrice;
-  if (price == null || isNaN(price) || price <= 0) {
-    price = pairs.length > 0 ? pairs[pairs.length-1].close : null;
-  }
-  let prevClose = null;
-  if (pairs.length >= 2) {
-    const lastClose = pairs[pairs.length-1].close;
-    const isSameAsLastClose = price && Math.abs(price - lastClose) / lastClose < 0.001;
-    if (isSameAsLastClose) prevClose = pairs[pairs.length-2].close;
-    else prevClose = lastClose;
-  } else {
-    prevClose = meta.chartPreviousClose || meta.previousClose;
-  }
-  return { price: price, prevClose: prevClose };
-}
-async function fetchTWPrice(symbol) {
-  symbol = symbol.trim().toUpperCase();
-  let lastErr = null;
-  const candidates = [symbol + ".TW", symbol + ".TWO"];
-  for (let i=0; i<candidates.length; i++) {
-    const ticker = candidates[i];
-    const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + ticker + "?interval=1d&range=10d";
-    try {
-      const json = await fetchViaProxy(url, true);
-      const result = json && json.chart && json.chart.result && json.chart.result[0];
-      if (result) {
-        const data = parseYahooResult(result);
-        if (data.price && data.price > 0) {
-          console.log("[TW] ✓ " + ticker + " price=" + data.price);
-          return data;
-        }
-      }
-      lastErr = new Error("Yahoo no data " + ticker);
-    } catch(e) { lastErr = e; }
-  }
-  try {
-    const url = "https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL";
-    const json = await fetchViaProxy(url, true);
-    if (Array.isArray(json)) {
-      const found = json.find(function(x) { return x.Code === symbol; });
-      if (found) {
-        const price = parseFloat(found.ClosingPrice);
-        const change = parseFloat(found.Change);
-        const prevClose = price - change;
-        if (price > 0) return { price: price, prevClose: prevClose };
-      }
-    }
-  } catch(e) { console.warn("[TW] TWSE OpenAPI failed: " + e.message); }
-  throw lastErr || new Error("台股 " + symbol + " 全部來源失敗");
-}
-async function fetchUSPrice(symbol) {
-  symbol = symbol.trim().toUpperCase();
-  const url = "https://query1.finance.yahoo.com/v8/finance/chart/" + symbol + "?interval=1d&range=10d";
-  const json = await fetchViaProxy(url, true);
-  const result = json && json.chart && json.chart.result && json.chart.result[0];
-  if (!result) throw new Error("No data " + symbol);
-  const data = parseYahooResult(result);
-  if (!data.price || data.price <= 0) throw new Error("No valid price " + symbol);
-  console.log("[US] ✓ " + symbol + " price=" + data.price);
-  return data;
-}
-async function fetchPrice(market, symbol) {
-  if (market === "tw") return fetchTWPrice(symbol);
-  return fetchUSPrice(symbol);
-}
-async function fetchPriceWithRetry(market, symbol, retries) {
-  retries = retries || 1;
-  let lastErr = null;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try { return await fetchPrice(market, symbol); }
-    catch(e) {
-      lastErr = e;
-      if (attempt < retries) await new Promise(r => setTimeout(r, 800));
-    }
-  }
-  throw lastErr;
-}
-function countValidRows() { return state.rows.filter(r => r.symbol && r.market).length; }
-
-async function updateAllPrices(forceUpdate) {
-  forceUpdate = forceUpdate || false;
-  showStatus(I18N[state.lang].fetching, "info", true);
-  await fetchFxRate();
-  let okCount = 0, failCount = 0, skipCount = 0;
-  const total = countValidRows();
-  for (let idx = 0; idx < state.rows.length; idx++) {
-    const row = state.rows[idx];
-    if (!row.symbol || !row.market) continue;
-    if (!shouldFetch(row, forceUpdate)) {
-      skipCount++;
-      showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
-      continue;
-    }
-    try {
-      const data = await fetchPriceWithRetry(row.market, row.symbol, 1);
-      if (data && data.price) {
-        state.rows[idx].price = data.price;
-        state.rows[idx].prevClose = data.prevClose;
-        state.rows[idx].currency = row.market==="us"?"USD":"TWD";
-        state.rows[idx].error = null;
-        state.rows[idx].lastFetchAt = Date.now();
-        okCount++;
-      } else { state.rows[idx].error = "No data"; failCount++; }
-    } catch(e) {
-      state.rows[idx].error = (e.message || "fail").substring(0, 30);
-      failCount++;
-      console.error("[Update] ✗ " + row.symbol + ":", e.message);
-    }
-    showStatus(I18N[state.lang].fetching + " ("+(okCount+failCount+skipCount)+"/" + total + ")", "info", true);
-    await new Promise(r => setTimeout(r, 200));
-  }
-  saveState();
-  if (okCount > 0 || skipCount > 0) {
-    recordTodayAssets();
-    renderChart();
-  }
-  renderTable();
-  const parts = [];
-  if (okCount > 0) parts.push(okCount + " ✓");
-  if (skipCount > 0) parts.push(skipCount + " 📦");
-  if (failCount > 0) parts.push(failCount + " ✗");
-  const msg = parts.join(" / ");
-  if (failCount === 0 && (okCount + skipCount) > 0) {
-    if (skipCount > 0 && okCount === 0) {
-      showStatus("📦 " + I18N[state.lang].skipped + skipCount + "（全部使用快取，未消耗 API）", "success");
-    } else { showStatus(I18N[state.lang].done2 + " " + msg, "success"); }
-  } else if (failCount > 0 && (okCount + skipCount) > 0) {
-    showStatus(I18N[state.lang].partial + msg, "info");
-  } else if (failCount > 0) {
-    showStatus(I18N[state.lang].err + failCount + " 檔失敗", "error");
-  } else { showStatus("請先輸入股票代號", "info"); }
-}
-
-function showStatus(msg, type, loading) {
-  const el = document.getElementById("status");
-  el.className = "status show " + (type||"info");
-  el.innerHTML = (loading?'<span class="spinner"></span>':"") + msg;
-  if (!loading) setTimeout(function(){ el.classList.remove("show"); }, 6000);
-}
-
-// ★ 折線圖（雙軸範圍調整，讓兩條線視覺分開）
-function renderChart() {
-  const dates = Object.keys(state.history).sort();
-  const canvas = document.getElementById("assetChart");
-  const emptyMsg = document.getElementById("chartEmpty");
-
-  if (dates.length < 2) {
-    canvas.style.display = "none";
-    emptyMsg.style.display = "block";
-    if (assetChartInstance) { assetChartInstance.destroy(); assetChartInstance = null; }
-    return;
-  }
-  canvas.style.display = "block";
-  emptyMsg.style.display = "none";
-
-  let filteredDates = dates;
-  if (currentChartRange !== "all") {
-    const days = parseInt(currentChartRange);
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    const cutoffStr = cutoff.toISOString().slice(0,10);
-    filteredDates = dates.filter(d => d >= cutoffStr);
-  }
-  if (filteredDates.length < 2) {
-    canvas.style.display = "none";
-    emptyMsg.style.display = "block";
-    emptyMsg.textContent = state.lang === "zh"
-      ? "此時間範圍內紀錄不足 2 筆，請選擇較長的時間範圍。"
-      : "Less than 2 records in this range. Please select a longer range.";
-    if (assetChartInstance) { assetChartInstance.destroy(); assetChartInstance = null; }
-    return;
-  }
-
-  const labels = filteredDates;
-  const totalValueData = filteredDates.map(d => state.history[d].totalValue);
-  const totalPnLData = filteredDates.map(d => state.history[d].totalPnL);
-
-  // ★ 計算雙軸範圍：讓總淨值線在上半部、開倉盈虧線在下半部
-  const tvMin = Math.min.apply(null, totalValueData);
-  const tvMax = Math.max.apply(null, totalValueData);
-  const tvRange = Math.max(tvMax - tvMin, Math.abs(tvMax) * 0.05);
-  const leftMin = tvMin - tvRange * 1.5;
-  const leftMax = tvMax + tvRange * 0.3;
-
-  const pnlMin = Math.min.apply(null, totalPnLData);
-  const pnlMax = Math.max.apply(null, totalPnLData);
-  const pnlRange = Math.max(pnlMax - pnlMin, Math.abs(pnlMax) * 0.05);
-  const rightMin = pnlMin - pnlRange * 0.3;
-  const rightMax = pnlMax + pnlRange * 1.5;
-
-  if (assetChartInstance) assetChartInstance.destroy();
-  const ctx = canvas.getContext("2d");
-  assetChartInstance = new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: state.lang === "zh" ? "總淨值" : "Total Value",
-          data: totalValueData,
-          borderColor: "#7e57c2",
-          backgroundColor: "rgba(126,87,194,0.15)",
-          borderWidth: 2.5,
-          fill: false,
-          tension: 0.3,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          yAxisID: "y"
-        },
-        {
-          label: state.lang === "zh" ? "開倉盈虧" : "Open P/L",
-          data: totalPnLData,
-          borderColor: "#ef5350",
-          backgroundColor: "rgba(239,83,80,0.0)",
-          borderWidth: 2,
-          fill: false,
-          tension: 0.3,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          borderDash: [6,3],
-          yAxisID: "y1"
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: { labels: { color: "#e8eaf6", font: { size: 13, weight: "600" } } },
-        tooltip: {
-          backgroundColor: "rgba(20,24,50,0.95)",
-          borderColor: "rgba(186,104,200,0.5)",
-          borderWidth: 1,
-          titleColor: "#e8eaf6",
-          bodyColor: "#e8eaf6",
-          callbacks: {
-            label: function(ctx) {
-              const v = ctx.parsed.y;
-              const cur = state.history[ctx.label] ? state.history[ctx.label].currency : state.currency;
-              return ctx.dataset.label + ": " + Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}) + " " + cur;
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: { color: "#90a4ae", maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
-          grid: { color: "rgba(255,255,255,0.05)" }
-        },
-        y: {
-          position: "left",
-          min: leftMin,
-          max: leftMax,
-          ticks: {
-            color: "#7e57c2",
-            callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
-          },
-          grid: { color: "rgba(126,87,194,0.08)" },
-          title: { display: true, text: state.lang === "zh" ? "總淨值" : "Total Value", color: "#7e57c2", font: { size: 13, weight: "600" } }
-        },
-        y1: {
-          position: "right",
-          min: rightMin,
-          max: rightMax,
-          ticks: {
-            color: "#ef5350",
-            callback: function(v) { return Number(v).toLocaleString("en-US", {maximumFractionDigits: 0}); }
-          },
-          grid: { drawOnChartArea: false },
-          title: { display: true, text: state.lang === "zh" ? "開倉盈虧" : "Open P/L", color: "#ef5350", font: { size: 13, weight: "600" } }
-        }
-      }
-    }
-  });
-}
-
-function bindChartControls() {
-  document.querySelectorAll(".chart-range-btn").forEach(btn => {
-    btn.addEventListener("click", function() {
-      currentChartRange = btn.getAttribute("data-range");
-      document.querySelectorAll(".chart-range-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderChart();
-    });
-  });
-}
-
-// Excel 匯出
-function exportExcel() {
-  showStatus(I18N[state.lang].excelGenerating, "info", true);
-  try {
-    const t = I18N[state.lang];
-    const wb = XLSX.utils.book_new();
-    const headers = [
-      t.market, t.symbol, t.shares, t.cost + "(" + state.currency + ")",
-      t.price, t.prevClose, t.changePrice, t.changePct,
-      t.changeVal, t.currentValue, t.openPnL, t.roi
-    ];
-    const dataRows = [];
-    state.rows.forEach(row => {
-      if (!row.symbol || !row.market) return;
-      const d = computeRowData(row);
-      const marketLabel = row.market === "tw" ? t.tw : t.us;
-      const costInRowCcy = parseFloat(row.cost) || null;
-      dataRows.push([
-        marketLabel, row.symbol, parseFloat(row.shares) || 0, costInRowCcy,
-        d.price, d.prev, d.changePrice,
-        d.dayPct != null ? d.dayPct / 100 : null,
-        d.dispDayPnL, d.dispCurVal, d.dispOpenPnL,
-        d.roi != null ? d.roi / 100 : null
-      ]);
-    });
-    const ws1Data = [headers].concat(dataRows);
-    const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
-    ws1["!cols"] = [
-      {wch:8},{wch:12},{wch:12},{wch:14},{wch:14},{wch:12},{wch:10},{wch:10},
-      {wch:14},{wch:16},{wch:14},{wch:10}
-    ];
-    const headerCells = ["A1","B1","C1","D1","E1","F1","G1","H1","I1","J1","K1","L1"];
-    headerCells.forEach(addr => {
-      if (!ws1[addr]) return;
-      ws1[addr].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
-        fill: { fgColor: { rgb: "2D1B4E" } },
-        alignment: { horizontal: "center", vertical: "center" }
-      };
-    });
-    const numFmt = "#,##0.00";
-    const intFmt = "#,##0";
-    const pctFmt = "+0.00%;-0.00%;0.00%";
-    const signedFmt = '+#,##0;-#,##0;0';
-    for (let r = 1; r < ws1Data.length; r++) {
-      const rowNum = r + 1;
-      const cellC = "C" + rowNum; if (ws1[cellC]) ws1[cellC].z = numFmt;
-      const cellD = "D" + rowNum; if (ws1[cellD]) ws1[cellD].z = numFmt;
-      const cellE = "E" + rowNum; if (ws1[cellE]) ws1[cellE].z = numFmt;
-      const cellF = "F" + rowNum; if (ws1[cellF]) ws1[cellF].z = numFmt;
-      const cellG = "G" + rowNum;
-      if (ws1[cellG]) {
-        ws1[cellG].z = signedFmt;
-        const v = ws1[cellG].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws1[cellG].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
-        }
-      }
-      const cellH = "H" + rowNum;
-      if (ws1[cellH]) {
-        ws1[cellH].z = pctFmt;
-        const v = ws1[cellH].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws1[cellH].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
-        }
-      }
-      const cellI = "I" + rowNum;
-      if (ws1[cellI]) {
-        ws1[cellI].z = signedFmt;
-        const v = ws1[cellI].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws1[cellI].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
-        }
-      }
-      const cellJ = "J" + rowNum; if (ws1[cellJ]) ws1[cellJ].z = intFmt;
-      const cellK = "K" + rowNum;
-      if (ws1[cellK]) {
-        ws1[cellK].z = signedFmt;
-        const v = ws1[cellK].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws1[cellK].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
-        }
-      }
-      const cellL = "L" + rowNum;
-      if (ws1[cellL]) {
-        ws1[cellL].z = pctFmt;
-        const v = ws1[cellL].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws1[cellL].s = { font: { color: { rgb: colorRgb }, bold: true }, alignment: {horizontal:"right"} };
-        }
-      }
-    }
-    ws1["!freeze"] = { xSplit: 0, ySplit: 1 };
-    XLSX.utils.book_append_sheet(wb, ws1, t.excelSheet1);
-
-    const histHeaders = [t.excelCol_date, t.excelCol_totalValue, t.excelCol_totalPnL, t.excelCol_currency];
-    const histDates = Object.keys(state.history).sort();
-    const histRows = histDates.map(d => {
-      const h = state.history[d];
-      return [d, h.totalValue, h.totalPnL, h.currency];
-    });
-    const ws2Data = [histHeaders].concat(histRows);
-    const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
-    ws2["!cols"] = [{wch:14},{wch:18},{wch:18},{wch:10}];
-    ["A1","B1","C1","D1"].forEach(addr => {
-      if (!ws2[addr]) return;
-      ws2[addr].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
-        fill: { fgColor: { rgb: "2D1B4E" } },
-        alignment: { horizontal: "center", vertical: "center" }
-      };
-    });
-    for (let r = 1; r < ws2Data.length; r++) {
-      const rowNum = r + 1;
-      const cellB = "B" + rowNum; if (ws2[cellB]) ws2[cellB].z = intFmt;
-      const cellC = "C" + rowNum;
-      if (ws2[cellC]) {
-        ws2[cellC].z = signedFmt;
-        const v = ws2[cellC].v;
-        if (v != null && !isNaN(v)) {
-          const colorRgb = v > 0 ? "EF5350" : (v < 0 ? "26A69A" : "B0BEC5");
-          ws2[cellC].s = { font: { color: { rgb: colorRgb }, bold: true } };
-        }
-      }
-    }
-    ws2["!freeze"] = { xSplit: 0, ySplit: 1 };
-    XLSX.utils.book_append_sheet(wb, ws2, t.excelSheet2);
-
-    const fileName = "portfolio_" + new Date().toISOString().slice(0,10) + ".xlsx";
-    XLSX.writeFile(wb, fileName);
-    showStatus(I18N[state.lang].excelDone, "success");
-  } catch(e) {
-    console.error("Excel error:", e);
-    showStatus("Excel failed: " + e.message, "error");
-  }
-}
-
-async function exportPDF() {
-  showStatus("Generating PDF...", "info", true);
-  try {
-    const jsPDF = window.jspdf.jsPDF;
-    const app = document.getElementById("app");
-    const canvas = await html2canvas(app, {
-      backgroundColor: "#1a1f3a", scale: 2, useCORS: true,
-      windowWidth: app.scrollWidth, windowHeight: app.scrollHeight
-    });
-    const pdf = new jsPDF("l", "mm", "a4");
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 5;
-    const usableW = pageW - margin * 2;
-    const usableH = pageH - margin * 2;
-    const imgPxW = canvas.width, imgPxH = canvas.height;
-    const imgMmH = imgPxH * (usableW / imgPxW);
-    if (imgMmH <= usableH) {
-      const offsetY = (pageH - imgMmH) / 2;
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, offsetY, usableW, imgMmH);
-    } else {
-      const pagePxH = (usableH / imgMmH) * imgPxH;
-      let yOffsetPx = 0, pageNum = 0;
-      while (yOffsetPx < imgPxH) {
-        const sliceH = Math.min(pagePxH, imgPxH - yOffsetPx);
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = imgPxW; sliceCanvas.height = sliceH;
-        const ctx = sliceCanvas.getContext("2d");
-        ctx.drawImage(canvas, 0, yOffsetPx, imgPxW, sliceH, 0, 0, imgPxW, sliceH);
-        const sliceMmH = sliceH * (usableW / imgPxW);
-        if (pageNum > 0) pdf.addPage("a4", "l");
-        pdf.addImage(sliceCanvas.toDataURL("image/png"), "PNG", margin, margin, usableW, sliceMmH);
-        yOffsetPx += sliceH; pageNum++;
-      }
-    }
-    pdf.save("portfolio_" + new Date().toISOString().slice(0,10) + ".pdf");
-    showStatus("PDF saved!", "success");
-  } catch(e) { console.error("PDF error:", e); showStatus("PDF failed: " + e.message, "error"); }
-}
-
-function generateShareLink() {
-  const payload = {
-    lang:state.lang, currency:state.currency, colorMode:state.colorMode,
-    columns: state.columns,
-    rows: state.rows.map(function(r) { return { market:r.market, symbol:r.symbol, shares:r.shares, cost:r.cost }; })
-  };
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const url = window.location.origin + window.location.pathname + "#data=" + encoded;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function(){
-      showStatus(I18N[state.lang].shareCopied, "success");
-    }).catch(function(){ prompt("Share link:", url); });
-  } else { prompt("Share link:", url); }
-}
-
-function init() {
-  loadState();
-  if (state.rows.length === 0) { for (let i=0; i<10; i++) state.rows.push(makeRow()); }
-  document.getElementById("langSelect").value = state.lang;
-  document.getElementById("currencySelect").value = state.currency;
-  document.getElementById("colorSelect").value = state.colorMode;
-  applyColorMode(); applyI18n(); renderTable();
-  bindChartControls();
-  renderChart();
-
-  document.getElementById("langSelect").addEventListener("change", function(e) {
-    state.lang = e.target.value; saveState(); applyI18n(); renderTable(); renderChart();
-  });
-  document.getElementById("currencySelect").addEventListener("change", function(e) {
-    state.currency = e.target.value; saveState(); renderTable();
-  });
-  document.getElementById("colorSelect").addEventListener("change", function(e) {
-    state.colorMode = e.target.value; saveState(); applyColorMode(); renderTable();
-  });
-  document.getElementById("btnUpdate").addEventListener("click", function(){ updateAllPrices(false); });
-  document.getElementById("btnForceUpdate").addEventListener("click", function(){ updateAllPrices(true); });
-  document.getElementById("btnAdd").addEventListener("click", function() {
-    state.rows.push(makeRow()); saveState(); renderTable();
-  });
-  document.getElementById("btnColumns").addEventListener("click", openColModal);
-  document.getElementById("btnCloseModal").addEventListener("click", closeColModal);
-  document.getElementById("btnResetCols").addEventListener("click", resetColumns);
-  document.getElementById("colModal").addEventListener("click", function(e) {
-    if (e.target.id === "colModal") closeColModal();
-  });
-  document.getElementById("btnPdf").addEventListener("click", exportPDF);
-  document.getElementById("btnExcel").addEventListener("click", exportExcel);
-  document.getElementById("btnShare").addEventListener("click", generateShareLink);
-  document.getElementById("btnClear").addEventListener("click", function() {
-    if (confirm(I18N[state.lang].confirmClear)) {
-      state.rows = [];
-      for (let i=0; i<10; i++) state.rows.push(makeRow());
-      saveState(); renderTable();
-    }
-  });
-  fetchFxRate().then(function(){ renderSummary(); });
-}
-init();
-</script>
-</body>
-</html>
